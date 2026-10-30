@@ -355,16 +355,30 @@ html, body {
 }
 
 .filter-group {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   background: var(--bg-surface);
   padding: 4px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-subtle);
 }
 
+.sliding-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, #ea580c 100%);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 10px var(--accent-glow);
+  transition: left 280ms cubic-bezier(0.16, 1, 0.3, 1), width 280ms cubic-bezier(0.16, 1, 0.3, 1), opacity 150ms ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
 .filter-tab {
+  position: relative;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -376,7 +390,8 @@ html, body {
   background: transparent;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: color 180ms ease;
+  user-select: none;
 }
 
 .filter-tab:hover {
@@ -384,9 +399,7 @@ html, body {
 }
 
 .filter-tab.active {
-  background: var(--accent-primary);
   color: #ffffff;
-  box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 .status-pills {
@@ -584,6 +597,17 @@ html, body {
 /* ==========================================================
    Task Card
    ========================================================== */
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .task-card {
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -593,7 +617,14 @@ html, body {
   position: relative;
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
   user-select: none;
+  animation: cardSlideIn 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+.task-card:nth-child(1) { animation-delay: 20ms; }
+.task-card:nth-child(2) { animation-delay: 50ms; }
+.task-card:nth-child(3) { animation-delay: 80ms; }
+.task-card:nth-child(4) { animation-delay: 110ms; }
+.task-card:nth-child(5) { animation-delay: 140ms; }
 
 .task-card:hover {
   transform: translateY(-2px);

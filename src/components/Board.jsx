@@ -3,6 +3,7 @@ import { Column } from './Column';
 
 export const Board = ({
   tasks,
+  filterKey,
   onTaskClick,
   onAddTask,
   onUpdateTaskStatus,
@@ -48,6 +49,7 @@ export const Board = ({
           status="todo"
           title="To Do"
           tasks={todoTasks}
+          filterKey={filterKey}
           onTaskClick={onTaskClick}
           onAddTask={onAddTask}
           onDragStart={handleDragStart}
@@ -60,6 +62,7 @@ export const Board = ({
           status="in_progress"
           title="In Progress"
           tasks={inProgressTasks}
+          filterKey={filterKey}
           onTaskClick={onTaskClick}
           onAddTask={onAddTask}
           onDragStart={handleDragStart}
@@ -72,6 +75,7 @@ export const Board = ({
           status="done"
           title="Done"
           tasks={doneTasks}
+          filterKey={filterKey}
           onTaskClick={onTaskClick}
           onAddTask={onAddTask}
           onDragStart={handleDragStart}

@@ -326,6 +326,7 @@ export function App() {
 
       <Board
         tasks={filteredTasks}
+        filterKey={`${assigneeFilter}-${priorityFilter}`}
         onTaskClick={handleOpenEditModal}
         onAddTask={handleOpenCreateModal}
         onUpdateTaskStatus={handleUpdateTaskStatus}

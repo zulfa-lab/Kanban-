@@ -6,6 +6,7 @@ export const Column = ({
   status,
   title,
   tasks,
+  filterKey = '',
   onTaskClick,
   onAddTask,
   onDragStart,
@@ -64,7 +65,7 @@ export const Column = ({
       <div className="column-card-list">
         {tasks.map((task) => (
           <TaskCard
-            key={task.id}
+            key={`${filterKey}-${task.id}`}
             task={task}
             onClick={onTaskClick}
             onDragStart={onDragStart}
