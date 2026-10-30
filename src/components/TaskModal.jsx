@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Trash2, Eye, Edit3, CheckCircle2, Clock } from 'lucide-react';
-import { INITIAL_COLLABORATORS } from '../services/mockData';
+import { useAuth } from '../context/AuthContext';
 
 export const TaskModal = ({
   isOpen,
@@ -11,6 +11,7 @@ export const TaskModal = ({
   onSave,
   onDeleteRequest,
 }) => {
+  const { users } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState(initialStatus);
@@ -25,17 +26,20 @@ export const TaskModal = ({
       setDescription(task.description || '');
       setStatus(task.status || 'todo');
       setPriority(task.priority || 'medium');
-      setAssignedTo(task.assigned_to || '');
+      let assigned = task.assigned_to || '';
+      if (assigned.includes('zulfa')) assigned = 'zulfa';
+      else if (assigned.includes('friend') || assigned.includes('alex')) assigned = 'alex';
+      setAssignedTo(assigned);
     } else {
       setTitle('');
       setDescription('');
       setStatus(initialStatus);
       setPriority('medium');
-      setAssignedTo(INITIAL_COLLABORATORS[0].email);
+      setAssignedTo(users[0]?.username || 'zulfa');
     }
     setTitleError('');
     setIsPreviewDesc(false);
-  }, [task, mode, initialStatus, isOpen]);
+  }, [task, mode, initialStatus, isOpen, users]);
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -218,10 +222,10 @@ export const TaskModal = ({
                 value={assignedTo}
                 onChange={(e) => setAssignedTo(e.target.value)}
               >
-                <option value="">Unassigned</option>
-                {INITIAL_COLLABORATORS.map((collab) => (
-                  <option key={collab.email} value={collab.email}>
-                    {collab.name} ({collab.email}) — {collab.role}
+                <option value="">Unassigned (Belum Ditugaskan)</option>
+                {users.map((u) => (
+                  <option key={u.username} value={u.username}>
+                    {u.name} (@{u.username}) {u.role === 'admin' ? '— Admin' : ''}
                   </option>
                 ))}
               </select>

@@ -1,6 +1,6 @@
 import React from 'react';
-import { Clock, AlertCircle } from 'lucide-react';
-import { INITIAL_COLLABORATORS } from '../services/mockData';
+import { Clock } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 // Helper to format relative time
 const formatRelativeTime = (isoString) => {
@@ -23,18 +23,24 @@ const formatRelativeTime = (isoString) => {
 };
 
 export const TaskCard = ({ task, onClick, onDragStart, onDragEnd, isDragging }) => {
-  const collaborator = INITIAL_COLLABORATORS.find((c) => c.email.toLowerCase() === task.assigned_to?.toLowerCase());
+  const { users } = useAuth();
+  const assignedUser = users?.find(
+    (u) =>
+      u.username?.toLowerCase() === task.assigned_to?.toLowerCase() ||
+      (task.assigned_to?.includes('zulfa') && u.username === 'zulfa') ||
+      (task.assigned_to?.includes('friend') && u.username === 'alex')
+  );
 
-  // Priority color config
+  // Priority config
   const priorityConfig = {
-    high: { label: 'High', class: 'high', icon: '🔴' },
-    medium: { label: 'Medium', class: 'medium', icon: '🟡' },
-    low: { label: 'Low', class: 'low', icon: '🟢' },
-  }[task.priority] || { label: 'Medium', class: 'medium', icon: '🟡' };
+    high: { label: 'High', class: 'high' },
+    medium: { label: 'Medium', class: 'medium' },
+    low: { label: 'Low', class: 'low' },
+  }[task.priority] || { label: 'Medium', class: 'medium' };
 
   // Generate initials
-  const initials = collaborator
-    ? collaborator.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
+  const initials = assignedUser
+    ? assignedUser.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
     : task.assigned_to ? task.assigned_to[0].toUpperCase() : '?';
 
   return (
@@ -73,11 +79,11 @@ export const TaskCard = ({ task, onClick, onDragStart, onDragEnd, isDragging }) 
           <span>{formatRelativeTime(task.updated_at || task.created_at)}</span>
         </div>
 
-        <div className="assignee-avatar-wrap" title={`Assigned to: ${task.assigned_to || 'Unassigned'}`}>
-          {collaborator?.avatar ? (
+        <div className="assignee-avatar-wrap" title={`Assigned to: ${assignedUser ? `${assignedUser.name} (@${assignedUser.username})` : (task.assigned_to || 'Unassigned')}`}>
+          {assignedUser?.avatar ? (
             <img 
-              src={collaborator.avatar} 
-              alt={collaborator.name} 
+              src={assignedUser.avatar} 
+              alt={assignedUser.name} 
               className="assignee-avatar" 
               onError={(e) => {
                 e.target.style.display = 'none';
@@ -87,7 +93,10 @@ export const TaskCard = ({ task, onClick, onDragStart, onDragEnd, isDragging }) 
           ) : null}
           <div 
             className="assignee-initials" 
-            style={{ display: collaborator?.avatar ? 'none' : 'flex' }}
+            style={{ 
+              display: assignedUser?.avatar ? 'none' : 'flex',
+              background: assignedUser?.role === 'admin' ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' : undefined
+            }}
           >
             {initials}
           </div>

@@ -1,180 +1,126 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { 
-  auth, 
-  googleProvider, 
-  signInWithPopup, 
-  signOut, 
-  onAuthStateChanged, 
-  isFirebaseConfigured 
-} from '../services/firebase';
-import { INITIAL_COLLABORATORS } from '../services/mockData';
+  subscribeToUsers, 
+  authenticateUser, 
+  addNewUser, 
+  deleteUserById, 
+  getStoredUsers 
+} from '../services/userService';
+import { isFirebaseConfigured } from '../services/firebase';
 
 const AuthContext = createContext(null);
-
-// Parse whitelist emails from env or defaults
-const envWhitelist = import.meta.env.VITE_WHITELIST_EMAILS || 'zulfa.dev@gmail.com,friend.collab@gmail.com';
-const WHITELISTED_EMAILS = envWhitelist
-  .split(',')
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
+const SESSION_STORAGE_KEY = 'jira_auth_session_v2';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [users, setUsers] = useState(getStoredUsers());
   const [loading, setLoading] = useState(true);
-  const [isDemoMode, setIsDemoMode] = useState(!isFirebaseConfigured);
   const [authError, setAuthError] = useState(null);
 
-  // Check if a given email is whitelisted
-  const checkIsWhitelisted = (email) => {
-    if (!email) return false;
-    return WHITELISTED_EMAILS.includes(email.toLowerCase());
-  };
-
+  // Subscribe to real-time users collection
   useEffect(() => {
-    // If real Firebase is configured, listen to Firebase Auth
-    if (isFirebaseConfigured && auth) {
-      const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-        if (firebaseUser) {
-          const email = firebaseUser.email || '';
-          const whitelisted = checkIsWhitelisted(email);
-          setUser({
-            uid: firebaseUser.uid,
-            name: firebaseUser.displayName || email.split('@')[0],
-            email: email,
-            photoURL: firebaseUser.photoURL || null,
-            isWhitelisted: whitelisted,
-            isRealFirebase: true,
-          });
-        } else {
-          // If no logged in user, default to demo mode or null
+    const unsubscribe = subscribeToUsers((updatedUsers) => {
+      setUsers(updatedUsers);
+
+      // Verify if currently logged in session user is still valid in system
+      const savedSession = localStorage.getItem(SESSION_STORAGE_KEY);
+      if (savedSession) {
+        try {
+          const parsed = JSON.parse(savedSession);
+          const validUser = updatedUsers.find((u) => u.id === parsed.id || u.username === parsed.username);
+          if (validUser) {
+            setUser({
+              id: validUser.id,
+              username: validUser.username,
+              name: validUser.name,
+              role: validUser.role || 'user',
+              avatar: validUser.avatar || null,
+              color: validUser.color || '#f97316',
+              isAdmin: validUser.role === 'admin',
+            });
+          } else {
+            // User was removed by admin
+            localStorage.removeItem(SESSION_STORAGE_KEY);
+            setUser(null);
+          }
+        } catch {
+          localStorage.removeItem(SESSION_STORAGE_KEY);
           setUser(null);
         }
-        setLoading(false);
-      });
-      return () => unsubscribe();
-    } else {
-      // Demo Mode initial user: Default to Project Lead
-      const savedDemoUser = localStorage.getItem('jira_lite_demo_user');
-      if (savedDemoUser) {
-        try {
-          setUser(JSON.parse(savedDemoUser));
-        } catch {
-          setDefaultDemoUser();
-        }
-      } else {
-        setDefaultDemoUser();
       }
-      setLoading(false);
+    });
+
+    // Check existing session once on mount
+    const savedSession = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (savedSession) {
+      try {
+        const parsed = JSON.parse(savedSession);
+        setUser(parsed);
+      } catch {
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+        setUser(null);
+      }
+    } else {
+      // In incognito or first visit: user is explicitly null (must log in!)
+      setUser(null);
     }
+
+    setLoading(false);
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
   }, []);
 
-  const setDefaultDemoUser = () => {
-    const defaultUser = {
-      uid: 'demo-user-1',
-      name: INITIAL_COLLABORATORS[0].name,
-      email: INITIAL_COLLABORATORS[0].email,
-      photoURL: INITIAL_COLLABORATORS[0].avatar,
-      isWhitelisted: true,
-      isRealFirebase: false,
-    };
-    setUser(defaultUser);
-    localStorage.setItem('jira_lite_demo_user', JSON.stringify(defaultUser));
-  };
-
-  // Google SSO Sign In
-  const loginWithGoogle = async () => {
+  // Login handler
+  const login = (username, password) => {
     setAuthError(null);
-    if (isFirebaseConfigured && auth && googleProvider) {
-      try {
-        const result = await signInWithPopup(auth, googleProvider);
-        const fbUser = result.user;
-        const email = fbUser.email || '';
-        const whitelisted = checkIsWhitelisted(email);
-        setUser({
-          uid: fbUser.uid,
-          name: fbUser.displayName || email.split('@')[0],
-          email: email,
-          photoURL: fbUser.photoURL,
-          isWhitelisted: whitelisted,
-          isRealFirebase: true,
-        });
-        return { success: true };
-      } catch (err) {
-        console.error('Google Sign-in error:', err);
-        setAuthError(err.message);
-        return { success: false, error: err.message };
-      }
-    } else {
-      // In demo mode, sign in with Lead
-      setDefaultDemoUser();
+    const result = authenticateUser(username, password);
+    if (result.success) {
+      setUser(result.user);
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(result.user));
       return { success: true };
+    } else {
+      setAuthError(result.error);
+      return { success: false, error: result.error };
     }
   };
 
-  // Sign out
-  const logout = async () => {
+  // Logout handler
+  const logout = () => {
     setAuthError(null);
-    if (isFirebaseConfigured && auth) {
-      try {
-        await signOut(auth);
-      } catch (err) {
-        console.error('Sign out error:', err);
-      }
-    }
     setUser(null);
-    localStorage.removeItem('jira_lite_demo_user');
+    localStorage.removeItem(SESSION_STORAGE_KEY);
   };
 
-  // Switch demo user (Zulfa, Friend, or Unauthorized stranger for testing)
-  const switchDemoUser = (userType) => {
-    let selected;
-    if (userType === 'owner') {
-      selected = {
-        uid: 'demo-user-owner',
-        name: INITIAL_COLLABORATORS[0].name,
-        email: INITIAL_COLLABORATORS[0].email,
-        photoURL: INITIAL_COLLABORATORS[0].avatar,
-        isWhitelisted: true,
-        isRealFirebase: false,
-      };
-    } else if (userType === 'collaborator') {
-      selected = {
-        uid: 'demo-user-collab',
-        name: INITIAL_COLLABORATORS[1].name,
-        email: INITIAL_COLLABORATORS[1].email,
-        photoURL: INITIAL_COLLABORATORS[1].avatar,
-        isWhitelisted: true,
-        isRealFirebase: false,
-      };
-    } else if (userType === 'unauthorized') {
-      selected = {
-        uid: 'demo-user-intruder',
-        name: 'Random Visitor',
-        email: 'stranger.unknown@example.com',
-        photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&crop=faces',
-        isWhitelisted: false,
-        isRealFirebase: false,
-      };
+  // Add user (Admin only)
+  const handleAddUser = async (newUserData) => {
+    if (!user || user.role !== 'admin') {
+      throw new Error('Hanya Admin yang dapat menambahkan pengguna baru.');
     }
-    if (selected) {
-      setUser(selected);
-      localStorage.setItem('jira_lite_demo_user', JSON.stringify(selected));
+    return await addNewUser(newUserData);
+  };
+
+  // Delete user (Admin only)
+  const handleDeleteUser = async (userId) => {
+    if (!user || user.role !== 'admin') {
+      throw new Error('Hanya Admin yang dapat menghapus pengguna.');
     }
+    return await deleteUserById(userId, user.id);
   };
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        users,
         loading,
-        isFirebaseConfigured,
-        isDemoMode,
-        setIsDemoMode,
-        whitelistedEmails: WHITELISTED_EMAILS,
         authError,
-        loginWithGoogle,
+        isFirebaseConfigured,
+        isAdmin: user?.role === 'admin',
+        login,
         logout,
-        switchDemoUser,
+        addUser: handleAddUser,
+        deleteUser: handleDeleteUser,
       }}
     >
       {children}

@@ -7,9 +7,9 @@ import {
   Sliders, 
   LogOut, 
   Check, 
-  UserCheck, 
+  Users, 
   ShieldCheck, 
-  ExternalLink 
+  UserCheck 
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -18,10 +18,11 @@ export const Header = ({
   onSearchChange,
   onCreateIssueClick,
   onOpenConfigClick,
+  onOpenUserManagement,
   theme,
   onToggleTheme,
 }) => {
-  const { user, logout, isFirebaseConfigured, switchDemoUser } = useAuth();
+  const { user, users, logout, isAdmin, login } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -101,6 +102,20 @@ export const Header = ({
 
       {/* Action buttons */}
       <div className="header-actions">
+        {/* Admin Manage Users button */}
+        {isAdmin && (
+          <button
+            id="btn-manage-users"
+            className="btn-secondary"
+            onClick={onOpenUserManagement}
+            title="Kelola Pengguna & Hak Akses"
+            style={{ height: 36, padding: '0 0.85rem', gap: '0.45rem', borderColor: 'var(--accent-glow)' }}
+          >
+            <Users size={16} color="var(--accent-primary)" />
+            <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>Kelola User</span>
+          </button>
+        )}
+
         <button
           id="btn-create-issue"
           className="btn-primary"
@@ -139,14 +154,14 @@ export const Header = ({
               gap: '6px',
               padding: '2px',
               borderRadius: 'var(--radius-pill)',
-              border: '1.5px solid var(--border-subtle)',
+              border: isAdmin ? '1.5px solid var(--accent-primary)' : '1.5px solid var(--border-subtle)',
               background: 'var(--bg-surface-elevated)'
             }}
           >
-            {user?.photoURL ? (
+            {user?.avatar ? (
               <img
-                src={user.photoURL}
-                alt={user.name || 'User'}
+                src={user.avatar}
+                alt={user.name || user.username}
                 style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }}
               />
             ) : (
@@ -155,8 +170,10 @@ export const Header = ({
                   width: 28,
                   height: 28,
                   borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
-                  color: '#ffffff',
+                  background: isAdmin 
+                    ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' 
+                    : 'var(--bg-card)',
+                  color: isAdmin ? '#ffffff' : 'var(--text-primary)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -176,7 +193,7 @@ export const Header = ({
                 position: 'absolute',
                 top: 'calc(100% + 8px)',
                 right: 0,
-                width: 250,
+                width: 260,
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border-light)',
                 borderRadius: 'var(--radius-md)',
@@ -188,10 +205,10 @@ export const Header = ({
             >
               <div style={{ marginBottom: '0.65rem', paddingBottom: '0.65rem', borderBottom: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                  {user?.name || 'Collaborator'}
+                  {user?.name || user?.username}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  {user?.email}
+                  @{user?.username}
                 </div>
                 <div style={{
                   marginTop: '0.4rem',
@@ -200,97 +217,88 @@ export const Header = ({
                   gap: '4px',
                   fontSize: '0.68rem',
                   fontWeight: 700,
-                  color: '#10b981',
-                  background: 'rgba(16, 185, 129, 0.12)',
-                  padding: '1px 6px',
+                  color: isAdmin ? '#f97316' : '#10b981',
+                  background: isAdmin ? 'rgba(249, 115, 22, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+                  padding: '2px 7px',
                   borderRadius: 'var(--radius-pill)',
-                  border: '1px solid rgba(16, 185, 129, 0.25)'
+                  border: isAdmin ? '1px solid rgba(249, 115, 22, 0.25)' : '1px solid rgba(16, 185, 129, 0.25)'
                 }}>
                   <ShieldCheck size={11} />
-                  <span>Whitelisted Member</span>
+                  <span>{isAdmin ? 'Administrator' : 'Standard User'}</span>
                 </div>
               </div>
 
-              {/* Demo user switchers */}
+              {/* Admin Manage User Option */}
+              {isAdmin && (
+                <div style={{ marginBottom: '0.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                  <button
+                    type="button"
+                    style={{
+                      width: '100%',
+                      padding: '7px 8px',
+                      fontSize: '0.8rem',
+                      borderRadius: 'var(--radius-sm)',
+                      border: 'none',
+                      background: 'rgba(249, 115, 22, 0.1)',
+                      color: 'var(--accent-primary)',
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      fontWeight: 600
+                    }}
+                    onClick={() => {
+                      onOpenUserManagement();
+                      setIsProfileMenuOpen(false);
+                    }}
+                  >
+                    <Users size={14} />
+                    <span>Kelola Pengguna ({users.length})</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Quick Persona Switcher for easy testing */}
               <div style={{ marginBottom: '0.5rem' }}>
                 <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                  Switch Test Persona:
+                  Ganti Akun Pengguna:
                 </div>
-                <button
-                  type="button"
-                  style={{
-                    width: '100%',
-                    padding: '6px 8px',
-                    fontSize: '0.78rem',
-                    borderRadius: 'var(--radius-sm)',
-                    border: 'none',
-                    background: user?.email?.includes('zulfa') ? 'rgba(249, 115, 22, 0.15)' : 'transparent',
-                    color: 'var(--text-primary)',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                  onClick={() => {
-                    switchDemoUser('owner');
-                    setIsProfileMenuOpen(false);
-                  }}
-                >
-                  <span>👤 Zulfa (Project Lead)</span>
-                  {user?.email?.includes('zulfa') && <Check size={12} color="#f97316" />}
-                </button>
-
-                <button
-                  type="button"
-                  style={{
-                    width: '100%',
-                    padding: '6px 8px',
-                    fontSize: '0.78rem',
-                    borderRadius: 'var(--radius-sm)',
-                    border: 'none',
-                    background: user?.email?.includes('friend') ? 'rgba(249, 115, 22, 0.15)' : 'transparent',
-                    color: 'var(--text-primary)',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                  onClick={() => {
-                    switchDemoUser('collaborator');
-                    setIsProfileMenuOpen(false);
-                  }}
-                >
-                  <span>👥 Alex (Collaborator)</span>
-                  {user?.email?.includes('friend') && <Check size={12} color="#f97316" />}
-                </button>
-
-                <button
-                  type="button"
-                  style={{
-                    width: '100%',
-                    padding: '6px 8px',
-                    fontSize: '0.78rem',
-                    borderRadius: 'var(--radius-sm)',
-                    border: 'none',
-                    background: 'transparent',
-                    color: '#ef4444',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between'
-                  }}
-                  onClick={() => {
-                    switchDemoUser('unauthorized');
-                    setIsProfileMenuOpen(false);
-                  }}
-                >
-                  <span>🚫 Test "Access Denied"</span>
-                </button>
+                {users.slice(0, 4).map((u) => {
+                  const isActive = u.username === user?.username;
+                  return (
+                    <button
+                      key={u.id || u.username}
+                      type="button"
+                      style={{
+                        width: '100%',
+                        padding: '6px 8px',
+                        fontSize: '0.78rem',
+                        borderRadius: 'var(--radius-sm)',
+                        border: 'none',
+                        background: isActive ? 'rgba(249, 115, 22, 0.15)' : 'transparent',
+                        color: 'var(--text-primary)',
+                        textAlign: 'left',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                      onClick={() => {
+                        login(u.username, u.password);
+                        setIsProfileMenuOpen(false);
+                      }}
+                    >
+                      <span>
+                        {u.role === 'admin' ? '👑' : '👤'} {u.name} (@{u.username})
+                      </span>
+                      {isActive && <Check size={12} color="#f97316" />}
+                    </button>
+                  );
+                })}
               </div>
 
+              {/* Sign Out Button */}
               <div style={{ paddingTop: '0.4rem', borderTop: '1px solid var(--border-subtle)' }}>
                 <button
                   type="button"
@@ -314,7 +322,7 @@ export const Header = ({
                   }}
                 >
                   <LogOut size={13} />
-                  <span>Sign Out</span>
+                  <span>Sign Out (Keluar)</span>
                 </button>
               </div>
             </div>

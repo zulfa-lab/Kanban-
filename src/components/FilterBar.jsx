@@ -1,7 +1,6 @@
 import React, { useRef, useState, useLayoutEffect, useEffect } from 'react';
 import { Users, User, UserCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { INITIAL_COLLABORATORS } from '../services/mockData';
 
 export const FilterBar = ({
   assigneeFilter,
@@ -11,8 +10,8 @@ export const FilterBar = ({
   totalTasksCount,
   filteredTasksCount,
 }) => {
-  const { user } = useAuth();
-  const friendCollab = INITIAL_COLLABORATORS.find((c) => c.email.toLowerCase() !== user?.email?.toLowerCase()) || INITIAL_COLLABORATORS[1];
+  const { user, users } = useAuth();
+  const friendUser = users.find((u) => u.username !== user?.username) || users[1] || { name: 'Temen', username: 'alex' };
 
   const assigneeRefs = {
     all: useRef(null),
@@ -92,7 +91,7 @@ export const FilterBar = ({
             ref={assigneeRefs.my_tasks}
             className={`filter-tab ${assigneeFilter === 'my_tasks' ? 'active' : ''}`}
             onClick={() => onAssigneeFilterChange('my_tasks')}
-            title={`Assigned to ${user?.email}`}
+            title={`Assigned to @${user?.username}`}
           >
             <User size={14} />
             <span>My Tasks</span>
@@ -102,10 +101,10 @@ export const FilterBar = ({
             ref={assigneeRefs.friends_tasks}
             className={`filter-tab ${assigneeFilter === 'friends_tasks' ? 'active' : ''}`}
             onClick={() => onAssigneeFilterChange('friends_tasks')}
-            title={`Assigned to ${friendCollab?.name} (${friendCollab?.email})`}
+            title={`Assigned to ${friendUser?.name} (@${friendUser?.username})`}
           >
             <UserCheck size={14} />
-            <span>{friendCollab?.name.split(' ')[0]}'s Tasks</span>
+            <span>{friendUser?.name?.split(' ')[0] || "Temen"}'s Tasks</span>
           </button>
         </div>
 
