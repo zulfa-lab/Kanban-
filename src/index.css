@@ -364,6 +364,16 @@ html, body {
   border: 1px solid var(--border-subtle);
 }
 
+.filter-dropdown-trigger:hover {
+  border-color: var(--border-light) !important;
+  background: var(--bg-surface-elevated) !important;
+}
+
+.filter-dropdown-item:hover {
+  background: var(--bg-surface-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
 .sliding-pill {
   position: absolute;
   top: 4px;

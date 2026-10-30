@@ -4,6 +4,7 @@ import {
   authenticateUser, 
   addNewUser, 
   deleteUserById, 
+  updateUserProfile,
   getStoredUsers 
 } from '../services/userService';
 import { isFirebaseConfigured } from '../services/firebase';
@@ -108,6 +109,19 @@ export const AuthProvider = ({ children }) => {
     return await deleteUserById(userId, user.id);
   };
 
+  // Update profile (avatar, name)
+  const handleUpdateProfile = async (updates) => {
+    if (!user) return;
+    const updated = await updateUserProfile(user.id, updates);
+    const updatedSession = {
+      ...user,
+      ...updates,
+    };
+    setUser(updatedSession);
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(updatedSession));
+    return updated;
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -121,6 +135,7 @@ export const AuthProvider = ({ children }) => {
         logout,
         addUser: handleAddUser,
         deleteUser: handleDeleteUser,
+        updateProfile: handleUpdateProfile,
       }}
     >
       {children}

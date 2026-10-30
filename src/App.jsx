@@ -8,6 +8,7 @@ import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { ConfigModal } from './components/ConfigModal';
 import { LoginScreen } from './components/LoginScreen';
 import { UserManagementModal } from './components/UserManagementModal';
+import { EditProfileModal } from './components/EditProfileModal';
 import { Toast } from './components/Toast';
 import { 
   subscribeToTasks, 
@@ -31,7 +32,7 @@ export function App() {
   // Tasks state
   const [tasks, setTasks] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [assigneeFilter, setAssigneeFilter] = useState('all'); // 'all' | 'my_tasks' | 'friends_tasks'
+  const [assigneeFilter, setAssigneeFilter] = useState('all'); // 'all' | 'my_tasks' | 'user:username'
   const [priorityFilter, setPriorityFilter] = useState('all'); // 'all' | 'high' | 'medium' | 'low'
 
   // Modals state
@@ -42,6 +43,7 @@ export function App() {
   const [deleteTaskId, setDeleteTaskId] = useState(null);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
   // Micro-feedback toasts
   const [toasts, setToasts] = useState([]);
@@ -98,7 +100,7 @@ export function App() {
         if (!matchesTitle && !matchesDesc && !matchesId) return false;
       }
 
-      // Assignee filter
+      // Assignee filter (Dropdown support)
       if (assigneeFilter === 'my_tasks') {
         const assigned = t.assigned_to?.toLowerCase() || '';
         const isMine =
@@ -113,6 +115,17 @@ export function App() {
           (user?.username === 'zulfa' && assigned.includes('zulfa')) ||
           (user?.username === 'alex' && (assigned.includes('friend') || assigned.includes('alex')));
         if (isMine || !assigned) return false;
+      } else if (assigneeFilter !== 'all') {
+        // Specific user selected from dropdown
+        const target = assigneeFilter.startsWith('user:') 
+          ? assigneeFilter.replace('user:', '').toLowerCase() 
+          : assigneeFilter.toLowerCase();
+        const assigned = t.assigned_to?.toLowerCase() || '';
+        const matches =
+          assigned === target ||
+          (target === 'alex' && (assigned.includes('friend') || assigned.includes('alex'))) ||
+          (target === 'zulfa' && assigned.includes('zulfa'));
+        if (!matches) return false;
       }
 
       // Priority filter
@@ -233,6 +246,7 @@ export function App() {
         onCreateIssueClick={() => handleOpenCreateModal('todo')}
         onOpenConfigClick={() => setIsConfigOpen(true)}
         onOpenUserManagement={() => setIsUserManagementOpen(true)}
+        onOpenEditProfile={() => setIsEditProfileOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
       />
@@ -281,6 +295,13 @@ export function App() {
           onUserAdded={(msg) => addToast(msg, 'success')}
         />
       )}
+
+      {/* Edit Profile & Avatar Modal */}
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+        onProfileUpdated={(msg) => addToast(msg, 'success')}
+      />
 
       {/* Firebase Architecture & Sandbox Settings */}
       <ConfigModal

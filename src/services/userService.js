@@ -4,6 +4,7 @@ import {
   collection, 
   doc, 
   setDoc,
+  updateDoc,
   deleteDoc, 
   onSnapshot 
 } from './firebase';
@@ -262,3 +263,39 @@ export const deleteUserById = async (userId, currentUserId) => {
   const updatedUsers = users.filter((u) => u.id !== userId);
   saveStoredUsers(updatedUsers);
 };
+
+/**
+ * Update user profile (avatar, name, etc.)
+ */
+export const updateUserProfile = async (userId, updates) => {
+  const users = getStoredUsers();
+  const index = users.findIndex((u) => u.id === userId || u.username === userId);
+  if (index === -1) {
+    throw new Error('Pengguna tidak ditemukan.');
+  }
+
+  const updatedUser = {
+    ...users[index],
+    ...updates,
+    updated_at: new Date().toISOString(),
+  };
+
+  users[index] = updatedUser;
+
+  // Save to Firestore if available
+  if (isFirebaseConfigured && db) {
+    try {
+      await updateDoc(doc(db, 'system_users', updatedUser.id), {
+        ...updates,
+        updated_at: new Date().toISOString(),
+      });
+    } catch (err) {
+      console.warn('Firestore updateUserProfile failed, saving locally:', err);
+    }
+  }
+
+  // Save to local storage
+  saveStoredUsers(users);
+  return updatedUser;
+};
+

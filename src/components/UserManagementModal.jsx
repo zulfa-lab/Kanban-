@@ -235,23 +235,37 @@ export const UserManagementModal = ({ isOpen, onClose, onUserAdded }) => {
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <div style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: '50%',
-                          background: u.role === 'admin' 
-                            ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' 
-                            : 'var(--bg-card)',
-                          color: u.role === 'admin' ? '#ffffff' : 'var(--text-primary)',
-                          border: '1px solid var(--border-light)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 700,
-                          fontSize: '0.85rem'
-                        }}>
-                          {u.name ? u.name[0].toUpperCase() : 'U'}
-                        </div>
+                        {u.avatar ? (
+                          <img
+                            src={u.avatar}
+                            alt={u.name}
+                            style={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '1.5px solid var(--border-light)'
+                            }}
+                          />
+                        ) : (
+                          <div style={{
+                            width: 36,
+                            height: 36,
+                            borderRadius: '50%',
+                            background: u.role === 'admin' 
+                              ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' 
+                              : 'var(--bg-card)',
+                            color: u.role === 'admin' ? '#ffffff' : 'var(--text-primary)',
+                            border: '1px solid var(--border-light)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: '0.85rem'
+                          }}>
+                            {u.name ? u.name[0].toUpperCase() : 'U'}
+                          </div>
+                        )}
 
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>

@@ -8,7 +8,8 @@ import {
   LogOut, 
   Users, 
   ShieldCheck, 
-  UserCheck 
+  UserCheck,
+  Camera 
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -18,6 +19,7 @@ export const Header = ({
   onCreateIssueClick,
   onOpenConfigClick,
   onOpenUserManagement,
+  onOpenEditProfile,
   theme,
   onToggleTheme,
 }) => {
@@ -225,6 +227,38 @@ export const Header = ({
                   <ShieldCheck size={11} />
                   <span>{isAdmin ? 'Administrator' : 'Standard User'}</span>
                 </div>
+              </div>
+
+              {/* Edit Profile / Avatar Button */}
+              <div style={{ marginBottom: '0.4rem', paddingBottom: '0.4rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                <button
+                  type="button"
+                  style={{
+                    width: '100%',
+                    padding: '7px 8px',
+                    fontSize: '0.8rem',
+                    borderRadius: 'var(--radius-sm)',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--text-primary)',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontWeight: 500,
+                    transition: 'all var(--transition-fast)'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-surface-elevated)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => {
+                    onOpenEditProfile();
+                    setIsProfileMenuOpen(false);
+                  }}
+                >
+                  <Camera size={14} color="var(--accent-primary)" />
+                  <span>Ganti Foto Profil</span>
+                </button>
               </div>
 
               {/* Admin Manage User Option */}
