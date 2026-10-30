@@ -6,7 +6,6 @@ import {
   Moon, 
   Sliders, 
   LogOut, 
-  Check, 
   Users, 
   ShieldCheck, 
   UserCheck 
@@ -22,7 +21,7 @@ export const Header = ({
   theme,
   onToggleTheme,
 }) => {
-  const { user, users, logout, isAdmin, login } = useAuth();
+  const { user, users, logout, isAdmin } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -258,45 +257,6 @@ export const Header = ({
                   </button>
                 </div>
               )}
-
-              {/* Quick Persona Switcher for easy testing */}
-              <div style={{ marginBottom: '0.5rem' }}>
-                <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                  Ganti Akun Pengguna:
-                </div>
-                {users.slice(0, 4).map((u) => {
-                  const isActive = u.username === user?.username;
-                  return (
-                    <button
-                      key={u.id || u.username}
-                      type="button"
-                      style={{
-                        width: '100%',
-                        padding: '6px 8px',
-                        fontSize: '0.78rem',
-                        borderRadius: 'var(--radius-sm)',
-                        border: 'none',
-                        background: isActive ? 'rgba(249, 115, 22, 0.15)' : 'transparent',
-                        color: 'var(--text-primary)',
-                        textAlign: 'left',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                      }}
-                      onClick={() => {
-                        login(u.username, u.password);
-                        setIsProfileMenuOpen(false);
-                      }}
-                    >
-                      <span>
-                        {u.role === 'admin' ? '👑' : '👤'} {u.name} (@{u.username})
-                      </span>
-                      {isActive && <Check size={12} color="#f97316" />}
-                    </button>
-                  );
-                })}
-              </div>
 
               {/* Sign Out Button */}
               <div style={{ paddingTop: '0.4rem', borderTop: '1px solid var(--border-subtle)' }}>

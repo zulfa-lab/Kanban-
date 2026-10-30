@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Lock, Eye, EyeOff, LogIn, ShieldAlert, Sparkles, ShieldCheck } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, LogIn, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const LoginScreen = () => {
@@ -30,12 +30,6 @@ export const LoginScreen = () => {
     if (!result.success) {
       setErrorMessage(result.error || 'Username atau kata sandi tidak cocok.');
     }
-  };
-
-  const handleQuickFill = (u, p) => {
-    setUsername(u);
-    setPassword(p);
-    setErrorMessage('');
   };
 
   return (
@@ -202,61 +196,16 @@ export const LoginScreen = () => {
           </button>
         </form>
 
-        {/* Quick Fill Helper */}
+        {/* Security / Production Footer Note */}
         <div style={{
-          padding: '0.9rem',
-          borderRadius: 'var(--radius-md)',
-          background: 'var(--bg-surface-elevated)',
-          border: '1px solid var(--border-subtle)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '0.6rem'
+          textAlign: 'center',
+          fontSize: '0.75rem',
+          color: 'var(--text-muted)',
+          lineHeight: 1.5,
+          borderTop: '1px solid var(--border-subtle)',
+          paddingTop: '0.75rem'
         }}>
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Akun Bawaan (Klik Cepat):
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{
-                padding: '6px 8px',
-                height: 'auto',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: '2px',
-                textAlign: 'left'
-              }}
-              onClick={() => handleQuickFill('zulfa', 'zulfa123')}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', fontWeight: 700, color: 'var(--accent-primary)' }}>
-                <ShieldCheck size={12} />
-                <span>Admin: zulfa</span>
-              </div>
-              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>sandi: zulfa123</span>
-            </button>
-
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{
-                padding: '6px 8px',
-                height: 'auto',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                gap: '2px',
-                textAlign: 'left'
-              }}
-              onClick={() => handleQuickFill('alex', 'alex123')}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                <Sparkles size={12} />
-                <span>User: alex</span>
-              </div>
-              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>sandi: alex123</span>
-            </button>
-          </div>
+          Gunakan nama pengguna & kata sandi yang telah didaftarkan oleh Administrator.
         </div>
       </div>
     </div>

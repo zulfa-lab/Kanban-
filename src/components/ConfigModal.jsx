@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { isFirebaseConfigured } from '../services/firebase';
 
 export const ConfigModal = ({ isOpen, onClose, onResetTasks }) => {
-  const { user, users = [], login } = useAuth();
+  const { user, users = [] } = useAuth();
   const [copiedRules, setCopiedRules] = useState(false);
 
   if (!isOpen) return null;
@@ -97,32 +97,6 @@ service cloud.firestore {
               ))}
             </div>
           </div>
-
-          {/* Persona quick switch */}
-          <div className="form-group">
-            <label className="form-label">Ganti Akun Cepat (Interactive Switcher)</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.5rem' }}>
-              {users.slice(0, 3).map((u) => {
-                const isActive = user?.username === u.username;
-                return (
-                  <button
-                    key={u.username}
-                    type="button"
-                    className="btn-secondary"
-                    style={{
-                      justifyContent: 'center',
-                      background: isActive ? 'rgba(249, 115, 22, 0.2)' : 'var(--bg-surface-elevated)',
-                      borderColor: isActive ? 'var(--accent-primary)' : 'var(--border-subtle)'
-                    }}
-                    onClick={() => login(u.username, u.password)}
-                  >
-                    <span>{u.role === 'admin' ? '👑' : '👤'} {u.name}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* Firestore Security Rules Box */}
           <div className="form-group">
             <div className="form-label">
