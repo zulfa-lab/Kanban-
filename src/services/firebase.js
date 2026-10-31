@@ -97,6 +97,21 @@ export const checkFirestoreStatus = async () => {
   try {
     // Check actual Firestore server connection
     await getDocsFromServer(collection(db, 'system_users'));
+
+    // Check chat_messages collection permission
+    try {
+      await getDocsFromServer(collection(db, 'chat_messages'));
+    } catch (chatErr) {
+      if (chatErr?.code === 'permission-denied') {
+        return {
+          status: 'permission_denied',
+          label: 'Firestore Rules: chat_messages Perlu Diizinkan',
+          details: 'Koneksi Firestore aktif, namun Security Rules menolak koleksi chat_messages. Buka tab Rules di Firebase Console untuk menambahkan izin koleksi ini.',
+          projectId: firebaseConfig.projectId
+        };
+      }
+    }
+
     return {
       status: 'connected',
       label: 'Firebase Cloud Connected & Synced',

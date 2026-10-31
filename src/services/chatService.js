@@ -2,10 +2,9 @@ import {
   db, 
   isFirebaseConfigured, 
   collection, 
-  addDoc, 
+  doc,
+  setDoc,
   onSnapshot, 
-  query, 
-  orderBy, 
   serverTimestamp 
 } from './firebase';
 
@@ -132,7 +131,7 @@ export const getStoredMessages = () => {
 };
 
 // Save local messages & broadcast to other tabs
-const saveStoredMessages = (messages) => {
+export const saveStoredMessages = (messages) => {
   try {
     localStorage.setItem(LOCAL_STORAGE_CHAT_KEY, JSON.stringify(messages));
     if (chatChannel) {
@@ -145,52 +144,16 @@ const saveStoredMessages = (messages) => {
 };
 
 /**
- * Subscribe to chat messages with real-time sync (Firestore or LocalStorage + BroadcastChannel).
+ * Subscribe to chat messages with real-time sync (Firestore AND LocalStorage/BroadcastChannel).
+ * Always keeps local listener active for instant 0ms responses.
  */
 export const subscribeToChatMessages = (onMessagesUpdated, onError) => {
-  if (isFirebaseConfigured && db) {
-    try {
-      const q = query(collection(db, 'chat_messages'), orderBy('createdAt', 'asc'));
-      const unsubscribe = onSnapshot(
-        q,
-        async (snapshot) => {
-          if (!snapshot.empty) {
-            const messages = snapshot.docs.map((d) => ({
-              id: d.id,
-              ...d.data(),
-            }));
-            onMessagesUpdated(messages);
-          } else {
-            // First time in Firestore: seed initial messages
-            const local = getStoredMessages();
-            for (const msg of local) {
-              try {
-                const { id: _id, ...data } = msg;
-                await addDoc(collection(db, 'chat_messages'), data);
-              } catch (e) {
-                console.warn('Could not seed initial message to Firestore:', e);
-              }
-            }
-            onMessagesUpdated(local);
-          }
-        },
-        (error) => {
-          console.warn('Firestore chat listener error, falling back to local storage:', error);
-          if (onError) onError(error);
-          onMessagesUpdated(getStoredMessages());
-        }
-      );
+  let unsubscribeFirestore = null;
 
-      return unsubscribe;
-    } catch (err) {
-      console.warn('Error setting up Firestore chat listener:', err);
-      if (onError) onError(err);
-    }
-  }
-
-  // Local BroadcastChannel / Storage mode
+  // 1. Initial immediate emit from local storage cache
   onMessagesUpdated(getStoredMessages());
 
+  // 2. Set up local listeners (active concurrently)
   const handleStorageChange = (e) => {
     if (e.key === LOCAL_STORAGE_CHAT_KEY) {
       onMessagesUpdated(getStoredMessages());
@@ -217,23 +180,86 @@ export const subscribeToChatMessages = (onMessagesUpdated, onError) => {
     chatChannel.addEventListener('message', handleBroadcastMessage);
   }
 
+  // 3. Connect to Firestore Cloud Database if configured
+  if (isFirebaseConfigured && db) {
+    try {
+      const chatCol = collection(db, 'chat_messages');
+      unsubscribeFirestore = onSnapshot(
+        chatCol,
+        async (snapshot) => {
+          if (!snapshot.empty) {
+            const cloudMessages = snapshot.docs.map((d) => {
+              const data = d.data();
+              let ts = data.createdAt;
+              if (data.serverCreatedAt?.toDate) {
+                ts = data.serverCreatedAt.toDate().toISOString();
+              }
+              return {
+                id: d.id,
+                ...data,
+                createdAt: ts || new Date().toISOString(),
+              };
+            });
+
+            // Sort chronologically ascending
+            cloudMessages.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
+
+            // Cache in local storage
+            try {
+              localStorage.setItem(LOCAL_STORAGE_CHAT_KEY, JSON.stringify(cloudMessages));
+            } catch {
+              // ignore quota
+            }
+
+            onMessagesUpdated(cloudMessages);
+          } else {
+            // First time in Firestore: seed initial messages using setDoc
+            const local = getStoredMessages();
+            const toSeed = local.length > 0 ? local : INITIAL_MESSAGES;
+            for (const msg of toSeed) {
+              try {
+                await setDoc(doc(db, 'chat_messages', msg.id), msg);
+              } catch (e) {
+                console.warn('Could not seed initial message to Firestore:', e);
+              }
+            }
+            onMessagesUpdated(toSeed);
+          }
+        },
+        (error) => {
+          console.warn('Firestore chat listener warning (Security rules or network):', error);
+          if (onError) onError(error);
+          onMessagesUpdated(getStoredMessages());
+        }
+      );
+    } catch (err) {
+      console.warn('Error setting up Firestore chat listener:', err);
+      if (onError) onError(err);
+    }
+  }
+
   return () => {
     window.removeEventListener('storage', handleStorageChange);
     window.removeEventListener('jira_chat_local_sync', handleCustomSync);
     if (chatChannel) {
       chatChannel.removeEventListener('message', handleBroadcastMessage);
     }
+    if (typeof unsubscribeFirestore === 'function') {
+      unsubscribeFirestore();
+    }
   };
 };
 
 /**
  * Send a new chat message.
+ * Updates local cache instantly and persists to Firestore.
  */
-export const sendChatMessage = async ({ channelId, sender, text, taskAttachment = null }) => {
+export const sendChatMessage = async ({ messageId, channelId, sender, text, taskAttachment = null }) => {
   if (!text.trim() && !taskAttachment) return null;
 
+  const id = messageId || ('msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6));
   const newMessage = {
-    id: 'msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+    id,
     channelId: channelId || 'general',
     senderId: sender.username || sender.id || 'anonymous',
     senderName: sender.name || sender.username || 'User',
@@ -251,23 +277,26 @@ export const sendChatMessage = async ({ channelId, sender, text, taskAttachment 
     createdAt: new Date().toISOString(),
   };
 
-  // Try saving to Firestore if available
+  // 1. Instantly update local storage & broadcast to other local tabs
+  const current = getStoredMessages();
+  const exists = current.some((m) => m.id === newMessage.id);
+  const updated = exists 
+    ? current.map((m) => m.id === newMessage.id ? newMessage : m) 
+    : [...current, newMessage];
+  saveStoredMessages(updated);
+
+  // 2. Persist to Firestore Cloud Database
   if (isFirebaseConfigured && db) {
     try {
-      const docRef = await addDoc(collection(db, 'chat_messages'), {
+      await setDoc(doc(db, 'chat_messages', newMessage.id), {
         ...newMessage,
         serverCreatedAt: serverTimestamp(),
       });
-      newMessage.id = docRef.id;
     } catch (err) {
-      console.warn('Failed to save chat message to Firestore, storing locally:', err);
+      console.error('Failed to save chat message to Cloud Firestore (Check Security Rules):', err);
+      throw err;
     }
   }
-
-  // Always keep LocalStorage in sync
-  const current = getStoredMessages();
-  const updated = [...current, newMessage];
-  saveStoredMessages(updated);
 
   return newMessage;
 };

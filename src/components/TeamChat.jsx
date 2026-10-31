@@ -18,18 +18,20 @@ import {
   subscribeToChatMessages, 
   sendChatMessage, 
   playChatChime, 
-  getDmChannelId 
+  getDmChannelId,
+  getStoredMessages
 } from '../services/chatService';
 
 export const TeamChat = ({ tasks = [], onOpenTask, user, users = [] }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState(() => getStoredMessages());
   const [activeChannelId, setActiveChannelId] = useState('general');
   const [inputText, setInputText] = useState('');
   const [selectedTaskAttachment, setSelectedTaskAttachment] = useState(null);
   const [isTaskPickerOpen, setIsTaskPickerOpen] = useState(false);
   const [taskPickerSearch, setTaskPickerSearch] = useState('');
+  const [syncWarning, setSyncWarning] = useState(null);
   const [isSoundMuted, setIsSoundMuted] = useState(() => {
     return localStorage.getItem('jira_chat_sound_muted') === 'true';
   });
@@ -40,36 +42,55 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [] }) => {
   const inputRef = useRef(null);
   const prevMessagesLengthRef = useRef(0);
 
+  // References to keep listener callback updated without re-subscribing
+  const isOpenRef = useRef(isOpen);
+  const activeChannelIdRef = useRef(activeChannelId);
+  const userRef = useRef(user);
+
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+    activeChannelIdRef.current = activeChannelId;
+    userRef.current = user;
+  }, [isOpen, activeChannelId, user]);
+
   // Subscribe to real-time chat messages
   useEffect(() => {
-    const unsubscribe = subscribeToChatMessages((allMessages) => {
-      // Check if new message arrived from someone else
-      if (allMessages.length > prevMessagesLengthRef.current && prevMessagesLengthRef.current > 0) {
-        const latest = allMessages[allMessages.length - 1];
-        const isFromMe = user && (latest.senderId === user.username || latest.senderId === user.id);
+    const unsubscribe = subscribeToChatMessages(
+      (allMessages) => {
+        // Check if new message arrived from someone else
+        if (allMessages.length > prevMessagesLengthRef.current && prevMessagesLengthRef.current > 0) {
+          const latest = allMessages[allMessages.length - 1];
+          const currUser = userRef.current;
+          const isFromMe = currUser && (latest.senderId === currUser.username || latest.senderId === currUser.id);
 
-        if (!isFromMe) {
-          playChatChime();
+          if (!isFromMe) {
+            playChatChime();
 
-          // Increment unread if window is closed or on different channel
-          if (!isOpen || activeChannelId !== latest.channelId) {
-            setUnreadCounts((prev) => ({
-              ...prev,
-              [latest.channelId]: (prev[latest.channelId] || 0) + 1,
-              _total: (prev._total || 0) + 1
-            }));
+            // Increment unread if window is closed or on different channel
+            if (!isOpenRef.current || activeChannelIdRef.current !== latest.channelId) {
+              setUnreadCounts((prev) => ({
+                ...prev,
+                [latest.channelId]: (prev[latest.channelId] || 0) + 1,
+                _total: (prev._total || 0) + 1
+              }));
+            }
           }
         }
-      }
 
-      prevMessagesLengthRef.current = allMessages.length;
-      setMessages(allMessages);
-    });
+        prevMessagesLengthRef.current = allMessages.length;
+        setMessages(allMessages);
+      },
+      (error) => {
+        if (error?.code === 'permission-denied') {
+          setSyncWarning('Firebase Security Rules menolak chat_messages. Perlu update rules agar chat tersinkron ke HP.');
+        }
+      }
+    );
 
     return () => {
       if (typeof unsubscribe === 'function') unsubscribe();
     };
-  }, [isOpen, activeChannelId, user]);
+  }, []);
 
   // Scroll to bottom when messages update or channel switches
   useEffect(() => {
@@ -116,26 +137,66 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [] }) => {
     ? users.find((u) => getDmChannelId(user?.username, u.username) === activeChannelId)
     : null;
 
-  // Handle sending message
+  // Handle sending message with instant optimistic update
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
     if (!inputText.trim() && !selectedTaskAttachment) return;
 
-    const payload = {
-      channelId: activeChannelId,
-      sender: user || { username: 'guest', name: 'Guest User' },
-      text: inputText,
-      taskAttachment: selectedTaskAttachment,
-    };
+    const textToSend = inputText;
+    const taskToSend = selectedTaskAttachment;
+    const channelToSend = activeChannelId;
 
     setInputText('');
     setSelectedTaskAttachment(null);
     setIsTaskPickerOpen(false);
 
-    await sendChatMessage(payload);
+    // Optimistic message with unique ID - immediately added to local state
+    const tempId = 'msg-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+    const optimisticMessage = {
+      id: tempId,
+      channelId: channelToSend,
+      senderId: user?.username || user?.id || 'anonymous',
+      senderName: user?.name || user?.username || 'User',
+      senderAvatar: user?.avatar || null,
+      senderRole: user?.role || 'user',
+      senderColor: user?.color || '#f97316',
+      text: textToSend.trim(),
+      taskAttachment: taskToSend ? {
+        id: taskToSend.id,
+        title: taskToSend.title,
+        status: taskToSend.status,
+        priority: taskToSend.priority,
+        assigned_to: taskToSend.assigned_to || ''
+      } : null,
+      createdAt: new Date().toISOString(),
+    };
+
+    // 1. Immediately show message in sender's UI (no need to close & reopen!)
+    setMessages((prev) => {
+      const exists = prev.some((m) => m.id === tempId);
+      return exists ? prev : [...prev, optimisticMessage];
+    });
+
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 50);
+    }, 30);
+
+    // 2. Persist to storage & Firestore Cloud
+    try {
+      await sendChatMessage({
+        messageId: tempId,
+        channelId: channelToSend,
+        sender: user || { username: 'guest', name: 'Guest User' },
+        text: textToSend,
+        taskAttachment: taskToSend,
+      });
+      setSyncWarning(null);
+    } catch (err) {
+      console.error('Failed to sync chat to cloud:', err);
+      if (err?.code === 'permission-denied') {
+        setSyncWarning('Firebase Security Rules belum mengizinkan koleksi chat_messages. Buka Pengaturan untuk update rules.');
+      }
+    }
   };
 
   // Filter tasks for task picker popover
@@ -298,6 +359,31 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [] }) => {
                   );
                 })}
               </div>
+
+              {/* Security Rules or Cloud sync warning banner */}
+              {syncWarning && (
+                <div style={{
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  borderBottom: '1px solid rgba(239, 68, 68, 0.25)',
+                  padding: '0.45rem 0.85rem',
+                  fontSize: '0.72rem',
+                  color: '#ef4444',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                  lineHeight: 1.35
+                }}>
+                  <span>⚠️ {syncWarning}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSyncWarning(null)}
+                    style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', padding: 2, display: 'flex' }}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              )}
 
               {/* Messages Body */}
               <div className="team-chat-messages-scroll">

@@ -52,10 +52,24 @@ export const ConfigModal = ({ isOpen, onClose, onResetTasks, onClearTasks }) => 
   const firestoreRules = `rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Kanban Tasks
     match /tasks/{taskId} {
       allow read, write: if true;
     }
+    // Autentikasi Pengguna & Profil
     match /system_users/{userId} {
+      allow read, write: if true;
+    }
+    // Live Team Chat & Attachment
+    match /chat_messages/{messageId} {
+      allow read, write: if true;
+    }
+    // Board Initialization & Settings
+    match /system_settings/{settingId} {
+      allow read, write: if true;
+    }
+    // Akses fallback dokumen
+    match /{document=**} {
       allow read, write: if true;
     }
   }
