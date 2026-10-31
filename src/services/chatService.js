@@ -4,6 +4,7 @@ import {
   collection, 
   doc,
   setDoc,
+  deleteDoc,
   onSnapshot, 
   serverTimestamp 
 } from './firebase';
@@ -299,4 +300,29 @@ export const sendChatMessage = async ({ messageId, channelId, sender, text, task
   }
 
   return newMessage;
+};
+
+/**
+ * Delete a chat message by ID (Admin only).
+ * Removes from local storage and deletes document in Cloud Firestore.
+ */
+export const deleteChatMessage = async (messageId) => {
+  if (!messageId) return false;
+
+  // 1. Immediately remove from local storage cache & broadcast to local tabs
+  const current = getStoredMessages();
+  const updated = current.filter((m) => m.id !== messageId);
+  saveStoredMessages(updated);
+
+  // 2. Delete document in Firestore Cloud Database
+  if (isFirebaseConfigured && db) {
+    try {
+      await deleteDoc(doc(db, 'chat_messages', messageId));
+    } catch (err) {
+      console.error('Failed to delete chat message in Cloud Firestore:', err);
+      throw err;
+    }
+  }
+
+  return true;
 };

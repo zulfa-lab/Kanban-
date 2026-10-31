@@ -12,17 +12,19 @@ import {
   CheckCheck,
   Layers,
   Search,
-  MessageCircle
+  MessageCircle,
+  Trash2
 } from 'lucide-react';
 import { 
   subscribeToChatMessages, 
   sendChatMessage, 
+  deleteChatMessage,
   playChatChime, 
   getDmChannelId,
   getStoredMessages
 } from '../services/chatService';
 
-export const TeamChat = ({ tasks = [], onOpenTask, user, users = [] }) => {
+export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState(() => getStoredMessages());
@@ -32,6 +34,7 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [] }) => {
   const [isTaskPickerOpen, setIsTaskPickerOpen] = useState(false);
   const [taskPickerSearch, setTaskPickerSearch] = useState('');
   const [syncWarning, setSyncWarning] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [isSoundMuted, setIsSoundMuted] = useState(() => {
     return localStorage.getItem('jira_chat_sound_muted') === 'true';
   });
@@ -195,6 +198,25 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [] }) => {
       console.error('Failed to sync chat to cloud:', err);
       if (err?.code === 'permission-denied') {
         setSyncWarning('Firebase Security Rules belum mengizinkan koleksi chat_messages. Buka Pengaturan untuk update rules.');
+      }
+    }
+  };
+
+  // Check if current logged-in user has admin privileges
+  const canDelete = isAdmin || user?.role === 'admin';
+
+  // Handle message deletion (Admin only)
+  const handleDeleteMessage = async (msgId) => {
+    // Optimistic removal from view
+    setMessages((prev) => prev.filter((m) => m.id !== msgId));
+    setConfirmDeleteId(null);
+
+    try {
+      await deleteChatMessage(msgId);
+    } catch (err) {
+      console.error('Failed to delete chat message:', err);
+      if (err?.code === 'permission-denied') {
+        setSyncWarning('Gagal menghapus di cloud: Izin ditolak oleh Firebase Security Rules.');
       }
     }
   };
@@ -478,6 +500,43 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [] }) => {
                           <div className="message-time-stamp">
                             <span>{formattedTime}</span>
                             {isMe && <CheckCheck size={13} style={{ color: 'var(--accent-primary)', marginLeft: 3 }} />}
+
+                            {/* Admin Delete Action */}
+                            {canDelete && (
+                              confirmDeleteId === msg.id ? (
+                                <div className="chat-inline-delete-box" onClick={(e) => e.stopPropagation()}>
+                                  <span>Hapus?</span>
+                                  <button
+                                    type="button"
+                                    className="chat-delete-confirm-btn"
+                                    onClick={() => handleDeleteMessage(msg.id)}
+                                    title="Konfirmasi hapus pesan ini"
+                                  >
+                                    Ya
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="chat-delete-cancel-btn"
+                                    onClick={() => setConfirmDeleteId(null)}
+                                    title="Batalkan"
+                                  >
+                                    Batal
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="chat-msg-delete-btn"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setConfirmDeleteId(msg.id);
+                                  }}
+                                  title="Hapus pesan (Admin)"
+                                >
+                                  <Trash2 size={11} />
+                                </button>
+                              )
+                            )}
                           </div>
                         </div>
                       </div>

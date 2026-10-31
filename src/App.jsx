@@ -348,6 +348,7 @@ export function App() {
         onOpenTask={handleOpenTaskFromChat}
         user={user}
         users={users}
+        isAdmin={isAdmin}
       />
 
       {/* Micro-Feedback Toasts */}
