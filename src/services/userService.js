@@ -104,20 +104,23 @@ export const subscribeToUsers = (onUsersUpdated) => {
             // Ensure default admin is present
             const hasAdmin = users.some((u) => u.username?.toLowerCase() === 'zulfa');
             if (!hasAdmin) {
-              users.unshift(INITIAL_SYSTEM_USERS[0]);
+              const localAdmin = getStoredUsers().find((u) => u.username?.toLowerCase() === 'zulfa') || INITIAL_SYSTEM_USERS[0];
+              users.unshift(localAdmin);
             }
             saveStoredUsers(users);
             onUsersUpdated(users);
           } else {
-            // First time seeding Firestore
-            INITIAL_SYSTEM_USERS.forEach(async (u) => {
+            // First time seeding Firestore: preserve any local changes/custom avatars
+            const localUsers = getStoredUsers();
+            const usersToSeed = localUsers.length > 0 ? localUsers : INITIAL_SYSTEM_USERS;
+            usersToSeed.forEach(async (u) => {
               try {
                 await setDoc(doc(db, 'system_users', u.id), u);
               } catch (e) {
                 console.warn('Seeding user to Firestore failed:', e);
               }
             });
-            onUsersUpdated(INITIAL_SYSTEM_USERS);
+            onUsersUpdated(usersToSeed);
           }
         },
         (error) => {
@@ -220,18 +223,18 @@ export const addNewUser = async (newUserData) => {
     created_at: new Date().toISOString(),
   };
 
+  // Save to local storage first
+  const updatedUsers = [...users, newUser];
+  saveStoredUsers(updatedUsers);
+
   // Save to Firestore if available
   if (isFirebaseConfigured && db) {
     try {
       await setDoc(doc(db, 'system_users', id), newUser);
     } catch (err) {
-      console.warn('Firestore setDoc user failed, saving locally:', err);
+      console.warn('Firestore setDoc user failed, saved locally:', err);
     }
   }
-
-  // Save to local storage
-  const updatedUsers = [...users, newUser];
-  saveStoredUsers(updatedUsers);
 
   return newUser;
 };
@@ -250,18 +253,18 @@ export const deleteUserById = async (userId, currentUserId) => {
     throw new Error('Admin utama (zulfa) tidak dapat dihapus.');
   }
 
+  // Delete from local storage first
+  const updatedUsers = users.filter((u) => u.id !== userId);
+  saveStoredUsers(updatedUsers);
+
   // Delete from Firestore if available
   if (isFirebaseConfigured && db) {
     try {
       await deleteDoc(doc(db, 'system_users', userId));
     } catch (err) {
-      console.warn('Firestore delete user failed, deleting locally:', err);
+      console.warn('Firestore delete user failed, deleted locally:', err);
     }
   }
-
-  // Delete from local storage
-  const updatedUsers = users.filter((u) => u.id !== userId);
-  saveStoredUsers(updatedUsers);
 };
 
 /**
@@ -282,6 +285,9 @@ export const updateUserProfile = async (userId, updates) => {
 
   users[index] = updatedUser;
 
+  // Always save to local storage immediately
+  saveStoredUsers(users);
+
   // Save to Firestore if available
   if (isFirebaseConfigured && db) {
     try {
@@ -290,12 +296,10 @@ export const updateUserProfile = async (userId, updates) => {
         updated_at: new Date().toISOString(),
       });
     } catch (err) {
-      console.warn('Firestore updateUserProfile failed, saving locally:', err);
+      console.warn('Firestore updateUserProfile failed, saved locally:', err);
     }
   }
 
-  // Save to local storage
-  saveStoredUsers(users);
   return updatedUser;
 };
 

@@ -4,6 +4,7 @@ import {
   collection, 
   doc, 
   addDoc, 
+  setDoc,
   updateDoc, 
   deleteDoc, 
   onSnapshot, 
@@ -64,14 +65,33 @@ export const subscribeToTasks = (onTasksUpdated, onError) => {
       const unsubscribe = onSnapshot(
         q,
         (snapshot) => {
-          const tasks = snapshot.docs.map((d) => ({
-            id: d.id,
-            ...d.data(),
-            // normalize timestamps
-            created_at: d.data().created_at?.toDate?.()?.toISOString() || d.data().created_at || new Date().toISOString(),
-            updated_at: d.data().updated_at?.toDate?.()?.toISOString() || d.data().updated_at || new Date().toISOString(),
-          }));
-          onTasksUpdated(tasks);
+          if (!snapshot.empty) {
+            const tasks = snapshot.docs.map((d) => ({
+              id: d.id,
+              ...d.data(),
+              // normalize timestamps
+              created_at: d.data().created_at?.toDate?.()?.toISOString() || d.data().created_at || new Date().toISOString(),
+              updated_at: d.data().updated_at?.toDate?.()?.toISOString() || d.data().updated_at || new Date().toISOString(),
+            }));
+            saveStoredTasks(tasks);
+            onTasksUpdated(tasks);
+          } else {
+            // If Firestore is empty, seed from local storage (or INITIAL_TASKS)
+            const stored = getStoredTasks();
+            const tasksToSeed = stored && stored.length > 0 ? stored : INITIAL_TASKS;
+            tasksToSeed.forEach(async (t) => {
+              try {
+                await setDoc(doc(db, 'tasks', t.id), {
+                  ...t,
+                  created_at: serverTimestamp(),
+                  updated_at: serverTimestamp(),
+                });
+              } catch (e) {
+                console.warn('Seeding task to Firestore failed:', e);
+              }
+            });
+            onTasksUpdated(tasksToSeed);
+          }
         },
         (error) => {
           console.error('Firestore onSnapshot error, falling back to local sync:', error);
@@ -136,6 +156,12 @@ export const createTask = async (taskData) => {
     updated_at: new Date().toISOString(),
   };
 
+  // Always update local storage first so tasks are never lost on reload
+  const tasks = getStoredTasks();
+  const id = `task-${Date.now().toString().slice(-4)}-${Math.floor(Math.random() * 1000)}`;
+  const created = { id, ...newTask };
+  saveStoredTasks([created, ...tasks]);
+
   if (isFirebaseConfigured && db) {
     try {
       const docRef = await addDoc(collection(db, 'tasks'), {
@@ -145,15 +171,10 @@ export const createTask = async (taskData) => {
       });
       return { id: docRef.id, ...newTask };
     } catch (err) {
-      console.warn('Firestore addDoc failed, writing locally:', err);
+      console.warn('Firestore addDoc failed, saved locally:', err);
     }
   }
 
-  // Local fallback
-  const tasks = getStoredTasks();
-  const id = `task-${Date.now().toString().slice(-4)}-${Math.floor(Math.random() * 1000)}`;
-  const created = { id, ...newTask };
-  saveStoredTasks([created, ...tasks]);
   return created;
 };
 
@@ -166,6 +187,14 @@ export const updateTask = async (taskId, updates) => {
     updated_at: new Date().toISOString(),
   };
 
+  // Always update local storage first
+  const tasks = getStoredTasks();
+  const index = tasks.findIndex((t) => t.id === taskId);
+  if (index !== -1) {
+    tasks[index] = { ...tasks[index], ...sanitizedUpdates };
+    saveStoredTasks(tasks);
+  }
+
   if (isFirebaseConfigured && db) {
     try {
       const docRef = doc(db, 'tasks', taskId);
@@ -175,16 +204,8 @@ export const updateTask = async (taskId, updates) => {
       });
       return;
     } catch (err) {
-      console.warn('Firestore updateDoc failed, writing locally:', err);
+      console.warn('Firestore updateDoc failed, updated locally:', err);
     }
-  }
-
-  // Local fallback
-  const tasks = getStoredTasks();
-  const index = tasks.findIndex((t) => t.id === taskId);
-  if (index !== -1) {
-    tasks[index] = { ...tasks[index], ...sanitizedUpdates };
-    saveStoredTasks(tasks);
   }
 };
 
@@ -192,26 +213,38 @@ export const updateTask = async (taskId, updates) => {
  * Delete a task
  */
 export const deleteTask = async (taskId) => {
+  // Always update local storage first
+  const tasks = getStoredTasks();
+  const filtered = tasks.filter((t) => t.id !== taskId);
+  saveStoredTasks(filtered);
+
   if (isFirebaseConfigured && db) {
     try {
       const docRef = doc(db, 'tasks', taskId);
       await deleteDoc(docRef);
       return;
     } catch (err) {
-      console.warn('Firestore deleteDoc failed, deleting locally:', err);
+      console.warn('Firestore deleteDoc failed, deleted locally:', err);
     }
   }
-
-  // Local fallback
-  const tasks = getStoredTasks();
-  const filtered = tasks.filter((t) => t.id !== taskId);
-  saveStoredTasks(filtered);
 };
 
 /**
  * Batch update order and status for moved / reordered tasks
  */
 export const reorderTasks = async (updatedTasksList) => {
+  // Always update local storage first
+  const allTasks = getStoredTasks();
+  const updateMap = new Map(updatedTasksList.map((t) => [t.id, t]));
+  const merged = allTasks.map((t) => {
+    if (updateMap.has(t.id)) {
+      const updated = updateMap.get(t.id);
+      return { ...t, status: updated.status, order: updated.order, updated_at: new Date().toISOString() };
+    }
+    return t;
+  });
+  saveStoredTasks(merged);
+
   if (isFirebaseConfigured && db) {
     try {
       // Fire parallel updateDoc promises
@@ -226,21 +259,9 @@ export const reorderTasks = async (updatedTasksList) => {
       await Promise.all(updatePromises);
       return;
     } catch (err) {
-      console.warn('Firestore batch update failed, updating locally:', err);
+      console.warn('Firestore batch update failed, updated locally:', err);
     }
   }
-
-  // Local fallback
-  const allTasks = getStoredTasks();
-  const updateMap = new Map(updatedTasksList.map((t) => [t.id, t]));
-  const merged = allTasks.map((t) => {
-    if (updateMap.has(t.id)) {
-      const updated = updateMap.get(t.id);
-      return { ...t, status: updated.status, order: updated.order, updated_at: new Date().toISOString() };
-    }
-    return t;
-  });
-  saveStoredTasks(merged);
 };
 
 /**
