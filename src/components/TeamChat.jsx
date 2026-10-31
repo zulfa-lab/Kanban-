@@ -26,7 +26,14 @@ import {
 } from '../services/chatService';
 import { startPresenceTracking } from '../services/presenceService';
 
-export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = false }) => {
+export const TeamChat = ({ 
+  tasks = [], 
+  onOpenTask, 
+  user, 
+  users = [], 
+  isAdmin = false,
+  isAnyModalOpen = false 
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState(() => getStoredMessages());
@@ -282,8 +289,8 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
 
   return (
     <>
-      {/* Floating Messenger Toggle Trigger Button */}
-      {!isOpen && (
+      {/* Floating Messenger Toggle Trigger Button - Hidden when a modal is open to avoid blocking form buttons */}
+      {!isOpen && !isAnyModalOpen && (
         <button
           id="btn-team-chat-trigger"
           className="team-chat-trigger-btn"

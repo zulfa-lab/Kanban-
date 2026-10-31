@@ -47,6 +47,13 @@ export function App() {
   const [isUserManagementOpen, setIsUserManagementOpen] = useState(false);
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
 
+  const isAnyModalOpen = 
+    isTaskModalOpen || 
+    Boolean(deleteTaskId) || 
+    isConfigOpen || 
+    isUserManagementOpen || 
+    isEditProfileOpen;
+
   // Micro-feedback toasts
   const [toasts, setToasts] = useState([]);
 
@@ -349,6 +356,7 @@ export function App() {
         user={user}
         users={users}
         isAdmin={isAdmin}
+        isAnyModalOpen={isAnyModalOpen}
       />
 
       {/* Micro-Feedback Toasts */}

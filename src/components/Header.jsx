@@ -107,13 +107,12 @@ export const Header = ({
         {isAdmin && (
           <button
             id="btn-manage-users"
-            className="btn-secondary"
+            className="btn-secondary header-admin-btn"
             onClick={onOpenUserManagement}
             title="Kelola Pengguna & Hak Akses"
-            style={{ height: 36, padding: '0 0.85rem', gap: '0.45rem', borderColor: 'var(--accent-glow)' }}
           >
             <Users size={16} color="var(--accent-primary)" />
-            <span style={{ fontSize: '0.82rem', fontWeight: 600 }}>Kelola User</span>
+            <span className="header-btn-text">Kelola User</span>
           </button>
         )}
 
@@ -124,7 +123,7 @@ export const Header = ({
           title="Create a new task (Hotkey: C)"
         >
           <Plus size={16} />
-          <span>Create</span>
+          <span className="header-btn-text">Create</span>
         </button>
 
         {/* Admin Firebase & Architecture Settings */}
