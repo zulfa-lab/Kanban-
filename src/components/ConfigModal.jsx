@@ -9,12 +9,13 @@ import {
   Info, 
   ExternalLink, 
   AlertTriangle,
-  RefreshCw 
+  RefreshCw,
+  Trash2 
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { isFirebaseConfigured, checkFirestoreStatus, firebaseConfig } from '../services/firebase';
 
-export const ConfigModal = ({ isOpen, onClose, onResetTasks }) => {
+export const ConfigModal = ({ isOpen, onClose, onResetTasks, onClearTasks }) => {
   const { users = [] } = useAuth();
   const [copiedRules, setCopiedRules] = useState(false);
   const [healthStatus, setHealthStatus] = useState(null);
@@ -246,27 +247,45 @@ service cloud.firestore {
             </pre>
           </div>
 
-          {/* Reset Demo tasks */}
+          {/* Reset & Clear Board tasks */}
           <div className="form-group" style={{ paddingTop: '0.5rem', borderTop: '1px solid var(--border-subtle)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
               <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Reset Board Data</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Kembalikan semua task ke data sprint bawaan</div>
+                <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Kelola Data Board</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Kosongkan board untuk mulai dari nol, atau muat data demo</div>
               </div>
-              <button
-                type="button"
-                className="btn-secondary"
-                style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)' }}
-                onClick={() => {
-                  if (window.confirm('Reset board ke initial demo tasks?')) {
-                    onResetTasks();
-                    onClose();
-                  }
-                }}
-              >
-                <RotateCcw size={14} />
-                <span>Reset Demo Tasks</span>
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {onClearTasks && (
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    style={{ color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.3)', fontSize: '0.75rem', padding: '0 10px', height: 32 }}
+                    onClick={() => {
+                      if (window.confirm('Hapus SEMUA task di board? Board akan menjadi kosong dan tidak akan diisi data dummy.')) {
+                        onClearTasks();
+                        onClose();
+                      }
+                    }}
+                  >
+                    <Trash2 size={13} />
+                    <span>Kosongkan Board</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ color: '#f59e0b', borderColor: 'rgba(245, 158, 11, 0.3)', fontSize: '0.75rem', padding: '0 10px', height: 32 }}
+                  onClick={() => {
+                    if (window.confirm('Reset board ke initial demo tasks?')) {
+                      onResetTasks();
+                      onClose();
+                    }
+                  }}
+                >
+                  <RotateCcw size={13} />
+                  <span>Reset Demo Tasks</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

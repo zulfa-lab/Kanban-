@@ -5,6 +5,8 @@ import {
   doc, 
   addDoc, 
   setDoc,
+  getDoc,
+  getDocs,
   updateDoc, 
   deleteDoc, 
   onSnapshot, 
@@ -15,6 +17,7 @@ import {
 import { INITIAL_TASKS } from './mockData';
 
 const LOCAL_STORAGE_KEY = 'jira_lite_tasks_v1';
+const BOARD_INITIALIZED_KEY = 'jira_lite_board_initialized_v2';
 const BROADCAST_CHANNEL_NAME = 'jira_lite_sync_bus';
 
 // Helper: BroadcastChannel for real-time multi-tab sync in Demo mode
@@ -31,14 +34,22 @@ if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
 const getStoredTasks = () => {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_TASKS));
-      return INITIAL_TASKS;
+    const hasInitialized = localStorage.getItem(BOARD_INITIALIZED_KEY);
+
+    if (raw === null) {
+      if (!hasInitialized) {
+        // Brand-new workspace, seed initial tasks
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(INITIAL_TASKS));
+        localStorage.setItem(BOARD_INITIALIZED_KEY, 'true');
+        return INITIAL_TASKS;
+      }
+      return [];
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch (err) {
     console.error('Error reading local tasks:', err);
-    return INITIAL_TASKS;
+    return [];
   }
 };
 
@@ -64,7 +75,7 @@ export const subscribeToTasks = (onTasksUpdated, onError) => {
       const q = query(collection(db, 'tasks'), orderBy('order', 'asc'));
       const unsubscribe = onSnapshot(
         q,
-        (snapshot) => {
+        async (snapshot) => {
           if (!snapshot.empty) {
             const tasks = snapshot.docs.map((d) => ({
               id: d.id,
@@ -73,12 +84,43 @@ export const subscribeToTasks = (onTasksUpdated, onError) => {
               created_at: d.data().created_at?.toDate?.()?.toISOString() || d.data().created_at || new Date().toISOString(),
               updated_at: d.data().updated_at?.toDate?.()?.toISOString() || d.data().updated_at || new Date().toISOString(),
             }));
+            localStorage.setItem(BOARD_INITIALIZED_KEY, 'true');
             saveStoredTasks(tasks);
             onTasksUpdated(tasks);
           } else {
-            // If Firestore is empty, seed from local storage (or INITIAL_TASKS)
+            // Check if board was already initialized
+            const localInitialized = localStorage.getItem(BOARD_INITIALIZED_KEY) === 'true';
+            let cloudInitialized = false;
+
+            try {
+              const initDoc = await getDoc(doc(db, 'system_settings', 'board_init'));
+              cloudInitialized = initDoc.exists() && initDoc.data()?.initialized;
+            } catch {
+              // Ignore read error if offline
+            }
+
+            if (localInitialized || cloudInitialized) {
+              // User has intentionally deleted all tasks: keep the board empty!
+              localStorage.setItem(BOARD_INITIALIZED_KEY, 'true');
+              saveStoredTasks([]);
+              onTasksUpdated([]);
+              return;
+            }
+
+            // ONLY on brand-new, first run on an uninitialized database:
             const stored = getStoredTasks();
             const tasksToSeed = stored && stored.length > 0 ? stored : INITIAL_TASKS;
+
+            localStorage.setItem(BOARD_INITIALIZED_KEY, 'true');
+            try {
+              await setDoc(doc(db, 'system_settings', 'board_init'), {
+                initialized: true,
+                initialized_at: serverTimestamp(),
+              });
+            } catch (e) {
+              console.warn('Setting board_init doc failed:', e);
+            }
+
             tasksToSeed.forEach(async (t) => {
               try {
                 await setDoc(doc(db, 'tasks', t.id), {
@@ -90,6 +132,7 @@ export const subscribeToTasks = (onTasksUpdated, onError) => {
                 console.warn('Seeding task to Firestore failed:', e);
               }
             });
+            saveStoredTasks(tasksToSeed);
             onTasksUpdated(tasksToSeed);
           }
         },
@@ -156,6 +199,7 @@ export const createTask = async (taskData) => {
     updated_at: new Date().toISOString(),
   };
 
+  localStorage.setItem(BOARD_INITIALIZED_KEY, 'true');
   // Always update local storage first so tasks are never lost on reload
   const tasks = getStoredTasks();
   const id = `task-${Date.now().toString().slice(-4)}-${Math.floor(Math.random() * 1000)}`;
@@ -213,6 +257,7 @@ export const updateTask = async (taskId, updates) => {
  * Delete a task
  */
 export const deleteTask = async (taskId) => {
+  localStorage.setItem(BOARD_INITIALIZED_KEY, 'true');
   // Always update local storage first
   const tasks = getStoredTasks();
   const filtered = tasks.filter((t) => t.id !== taskId);
@@ -220,6 +265,11 @@ export const deleteTask = async (taskId) => {
 
   if (isFirebaseConfigured && db) {
     try {
+      await setDoc(
+        doc(db, 'system_settings', 'board_init'),
+        { initialized: true, updated_at: serverTimestamp() },
+        { merge: true }
+      );
       const docRef = doc(db, 'tasks', taskId);
       await deleteDoc(docRef);
       return;
@@ -265,9 +315,56 @@ export const reorderTasks = async (updatedTasksList) => {
 };
 
 /**
+ * Clear all tasks completely (Empty board)
+ */
+export const clearAllTasks = async () => {
+  localStorage.setItem(BOARD_INITIALIZED_KEY, 'true');
+  saveStoredTasks([]);
+
+  if (isFirebaseConfigured && db) {
+    try {
+      await setDoc(doc(db, 'system_settings', 'board_init'), {
+        initialized: true,
+        cleared_at: serverTimestamp(),
+      });
+      const snap = await getDocs(collection(db, 'tasks'));
+      const deletePromises = snap.docs.map((d) => deleteDoc(doc(db, 'tasks', d.id)));
+      await Promise.all(deletePromises);
+    } catch (err) {
+      console.warn('Clear all tasks in Firestore failed:', err);
+    }
+  }
+  return [];
+};
+
+/**
  * Reset all tasks to initial demo sprint tasks
  */
-export const resetDemoTasks = () => {
+export const resetDemoTasks = async () => {
+  localStorage.setItem(BOARD_INITIALIZED_KEY, 'true');
   saveStoredTasks(INITIAL_TASKS);
+
+  if (isFirebaseConfigured && db) {
+    try {
+      await setDoc(doc(db, 'system_settings', 'board_init'), {
+        initialized: true,
+        seeded_at: serverTimestamp(),
+      });
+      const snap = await getDocs(collection(db, 'tasks'));
+      const deletePromises = snap.docs.map((d) => deleteDoc(doc(db, 'tasks', d.id)));
+      await Promise.all(deletePromises);
+
+      const seedPromises = INITIAL_TASKS.map((t) =>
+        setDoc(doc(db, 'tasks', t.id), {
+          ...t,
+          created_at: serverTimestamp(),
+          updated_at: serverTimestamp(),
+        })
+      );
+      await Promise.all(seedPromises);
+    } catch (err) {
+      console.warn('Reset demo tasks in Firestore failed:', err);
+    }
+  }
   return INITIAL_TASKS;
 };

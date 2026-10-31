@@ -16,7 +16,8 @@ import {
   updateTask, 
   deleteTask, 
   reorderTasks, 
-  resetDemoTasks 
+  resetDemoTasks,
+  clearAllTasks
 } from './services/taskService';
 import { isFirebaseConfigured } from './services/firebase';
 import { Zap } from 'lucide-react';
@@ -203,10 +204,26 @@ export function App() {
     }
   };
 
-  const handleResetTasks = () => {
-    const freshTasks = resetDemoTasks();
-    setTasks(freshTasks);
-    addToast('Board telah direset ke initial sprint tasks', 'success');
+  const handleResetTasks = async () => {
+    try {
+      const freshTasks = await resetDemoTasks();
+      setTasks(freshTasks);
+      addToast('Board telah direset ke initial sprint tasks', 'success');
+    } catch (err) {
+      console.error('Reset tasks failed:', err);
+      addToast('Gagal mereset tasks', 'danger');
+    }
+  };
+
+  const handleClearAllTasks = async () => {
+    try {
+      await clearAllTasks();
+      setTasks([]);
+      addToast('Semua task berhasil dihapus (Board kosong)', 'info');
+    } catch (err) {
+      console.error('Clear tasks failed:', err);
+      addToast('Gagal mengosongkan board', 'danger');
+    }
   };
 
   // Loading Screen
@@ -308,6 +325,7 @@ export function App() {
         isOpen={isConfigOpen}
         onClose={() => setIsConfigOpen(false)}
         onResetTasks={handleResetTasks}
+        onClearTasks={handleClearAllTasks}
       />
 
       {/* Micro-Feedback Toasts */}
