@@ -320,13 +320,15 @@ export function App() {
         onProfileUpdated={(msg) => addToast(msg, 'success')}
       />
 
-      {/* Firebase Architecture & Sandbox Settings */}
-      <ConfigModal
-        isOpen={isConfigOpen}
-        onClose={() => setIsConfigOpen(false)}
-        onResetTasks={handleResetTasks}
-        onClearTasks={handleClearAllTasks}
-      />
+      {/* Firebase Architecture & Sandbox Settings (Admin Only) */}
+      {isAdmin && (
+        <ConfigModal
+          isOpen={isConfigOpen}
+          onClose={() => setIsConfigOpen(false)}
+          onResetTasks={handleResetTasks}
+          onClearTasks={handleClearAllTasks}
+        />
+      )}
 
       {/* Micro-Feedback Toasts */}
       <Toast toasts={toasts} onDismiss={removeToast} />

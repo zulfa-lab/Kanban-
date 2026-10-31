@@ -127,14 +127,17 @@ export const Header = ({
           <span>Create</span>
         </button>
 
-        <button
-          className="btn-icon"
-          onClick={onOpenConfigClick}
-          title="Firebase & Environment Settings"
-          aria-label="Settings"
-        >
-          <Sliders size={16} />
-        </button>
+        {/* Admin Firebase & Architecture Settings */}
+        {isAdmin && (
+          <button
+            className="btn-icon"
+            onClick={onOpenConfigClick}
+            title="Firebase & Environment Settings (Admin Only)"
+            aria-label="Settings"
+          >
+            <Sliders size={16} />
+          </button>
+        )}
 
         <button
           className="btn-icon"
