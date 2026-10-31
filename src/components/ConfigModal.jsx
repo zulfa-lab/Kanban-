@@ -64,6 +64,10 @@ service cloud.firestore {
     match /chat_messages/{messageId} {
       allow read, write: if true;
     }
+    // Realtime User Online Presence
+    match /system_presence/{userId} {
+      allow read, write: if true;
+    }
     // Board Initialization & Settings
     match /system_settings/{settingId} {
       allow read, write: if true;

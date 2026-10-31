@@ -1755,9 +1755,19 @@ html, body {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #10b981;
   border: 1.5px solid var(--neu-base);
-  box-shadow: 0 0 4px #10b981;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.user-online-dot.online {
+  background: #10b981;
+  box-shadow: 0 0 5px #10b981;
+}
+
+.user-online-dot.offline {
+  background: #94a3b8;
+  box-shadow: none;
+  opacity: 0.55;
 }
 
 .chat-header-actions {
@@ -1831,10 +1841,29 @@ html, body {
 }
 
 .tab-user-status-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.tab-user-status-dot.online {
   background: #10b981;
+  box-shadow: 0 0 5px #10b981;
+}
+
+.tab-user-status-dot.offline {
+  background: #94a3b8;
+  opacity: 0.55;
+}
+
+.chat-tab-pill.active .tab-user-status-dot.online {
+  background: #ffffff;
+  box-shadow: 0 0 4px #ffffff;
+}
+
+.chat-tab-pill.active .tab-user-status-dot.offline {
+  background: rgba(255, 255, 255, 0.45);
 }
 
 .tab-unread-dot {

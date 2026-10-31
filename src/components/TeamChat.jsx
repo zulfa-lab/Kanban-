@@ -24,6 +24,7 @@ import {
   getDmChannelId,
   getStoredMessages
 } from '../services/chatService';
+import { startPresenceTracking } from '../services/presenceService';
 
 export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = false }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -37,6 +38,7 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
   const [syncWarning, setSyncWarning] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
+  const [onlineMap, setOnlineMap] = useState({});
   const [isSoundMuted, setIsSoundMuted] = useState(() => {
     return localStorage.getItem('jira_chat_sound_muted') === 'true';
   });
@@ -57,6 +59,27 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
     activeChannelIdRef.current = activeChannelId;
     userRef.current = user;
   }, [isOpen, activeChannelId, user]);
+
+  // Track live online status across tabs and devices
+  useEffect(() => {
+    const stopPresence = startPresenceTracking(user, (map) => {
+      setOnlineMap(map);
+    });
+    return () => {
+      if (typeof stopPresence === 'function') stopPresence();
+    };
+  }, [user]);
+
+  // Helper to determine whether a given user is currently online
+  const isUserOnline = (username) => {
+    if (!username) return false;
+    const clean = username.trim().toLowerCase();
+    // Current logged-in user is always online locally
+    if (user?.username && clean === user.username.trim().toLowerCase()) {
+      return true;
+    }
+    return Boolean(onlineMap[clean]);
+  };
 
   // Subscribe to real-time chat messages
   useEffect(() => {
@@ -273,7 +296,8 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
         >
           <div className="chat-trigger-icon-wrap">
             <MessageSquare size={22} className="chat-trigger-icon" />
-            <span className="chat-online-pulse" />
+            {/* Tanda hijau hanya muncul jika ada pesan belum dibaca, jika sudah dibaca semua maka dihilangkan */}
+            {totalUnread > 0 && <span className="chat-online-pulse" />}
           </div>
 
           <span className="chat-trigger-label">Team Chat</span>
@@ -323,12 +347,12 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
                         {activeDmUser?.name ? activeDmUser.name[0].toUpperCase() : 'U'}
                       </div>
                     )}
-                    <span className="user-online-dot" />
+                    <span className={`user-online-dot ${isUserOnline(activeDmUser?.username) ? 'online' : 'offline'}`} />
                   </div>
                   <div>
                     <div className="channel-title">{activeDmUser?.name || 'Collaborator'}</div>
                     <div className="channel-subtitle">
-                      @{activeDmUser?.username} • {activeDmUser?.role === 'admin' ? 'Admin' : 'Member'}
+                      @{activeDmUser?.username} • {isUserOnline(activeDmUser?.username) ? 'Online' : 'Offline'}
                     </div>
                   </div>
                 </div>
@@ -432,6 +456,7 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
                   const dmId = getDmChannelId(user?.username, u.username);
                   const isAct = activeChannelId === dmId;
                   const unread = unreadCounts[dmId] || 0;
+                  const isTargetOnline = isUserOnline(u.username);
 
                   return (
                     <button
@@ -439,9 +464,9 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
                       type="button"
                       className={`chat-tab-pill ${isAct ? 'active' : ''}`}
                       onClick={() => setActiveChannelId(dmId)}
-                      title={`Direct Message ke ${u.name}`}
+                      title={`Direct Message ke ${u.name} (${isTargetOnline ? 'Online' : 'Offline'})`}
                     >
-                      <span className="tab-user-status-dot" />
+                      <span className={`tab-user-status-dot ${isTargetOnline ? 'online' : 'offline'}`} />
                       <span>{u.name.split(' ')[0]}</span>
                       {unread > 0 && <span className="tab-unread-dot" />}
                     </button>
