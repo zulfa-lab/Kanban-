@@ -1,104 +1,126 @@
 /* ==========================================================
-   Aura Jira-Lite - Work Tracker & Kanban Board Design System
-   Solar Orange Theme
+   Aura Jira-Lite - Soft Neumorphic Design System
+   Inspired by tactile Soft UI with vibrant Solar Orange accents
    ========================================================== */
 
 :root {
-  /* Color Palette - Dark Mode (Warm Solar Orange Obsidian) */
-  --bg-app: #0c0a09;
-  --bg-gradient: radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.16) 0%, rgba(12, 10, 9, 0) 65%);
-  --bg-surface: #14110e;
-  --bg-surface-elevated: #1c1815;
-  --bg-column: rgba(22, 18, 15, 0.82);
-  --bg-card: #231d18;
-  --bg-card-hover: #2c241e;
-  --bg-card-active: #352c24;
-  
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-light: rgba(249, 115, 22, 0.22);
-  --border-focus: #f97316;
-  --border-glow: rgba(249, 115, 22, 0.4);
+  /* ==========================================================
+     Light Mode (Default Neumorphism - Soft Pearl Grey & Solar Orange)
+     Matches tactile clay/molded plastic with soft dual shadows
+     ========================================================== */
+  --neu-base: #e6ebf5;
+  --neu-base-sunken: #dbe1ec;
+  --neu-base-elevated: #edf2fc;
+  --neu-convex: linear-gradient(145deg, #f2f7ff, #dee3ed);
+  --neu-concave: linear-gradient(145deg, #dee3ed, #f2f7ff);
 
-  --text-primary: #fafaf9;
-  --text-secondary: #a8a29e;
-  --text-muted: #78716c;
-  --text-inverse: #0c0a09;
+  /* Dual Soft Shadows (Light Reflection + Ambient Dark Shadow) */
+  --neu-shadow-dark: #b8c1d1;
+  --neu-shadow-light: #ffffff;
 
+  --shadow-raised-xs: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+  --shadow-raised-sm: 4px 4px 9px var(--neu-shadow-dark), -4px -4px 9px var(--neu-shadow-light);
+  --shadow-raised: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
+  --shadow-raised-hover: 8px 9px 20px var(--neu-shadow-dark), -8px -9px 20px var(--neu-shadow-light);
+  --shadow-raised-lg: 12px 14px 30px var(--neu-shadow-dark), -12px -14px 30px var(--neu-shadow-light);
+  --shadow-raised-xl: 16px 20px 48px var(--neu-shadow-dark), -16px -20px 48px var(--neu-shadow-light);
+
+  --shadow-inset-xs: inset 2px 2px 4px var(--neu-shadow-dark), inset -2px -2px 4px var(--neu-shadow-light);
+  --shadow-inset-sm: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+  --shadow-inset: inset 4px 4px 9px var(--neu-shadow-dark), inset -4px -4px 9px var(--neu-shadow-light);
+  --shadow-inset-lg: inset 6px 6px 14px var(--neu-shadow-dark), inset -6px -6px 14px var(--neu-shadow-light);
+
+  /* Solar Orange Accent & Tactile Orange Shadows */
   --accent-primary: #f97316;
   --accent-primary-hover: #ea580c;
+  --accent-gradient: linear-gradient(135deg, #ff7a18 0%, #ea580c 100%);
+  --accent-gradient-hover: linear-gradient(135deg, #ff8c36 0%, #f97316 100%);
   --accent-glow: rgba(249, 115, 22, 0.32);
-  
-  /* Status Lane Colors */
-  --lane-todo: #fb923c;
-  --lane-todo-bg: rgba(251, 146, 60, 0.12);
-  --lane-todo-border: rgba(251, 146, 60, 0.35);
+  --shadow-orange: 5px 6px 16px rgba(234, 88, 12, 0.38), -4px -4px 10px var(--neu-shadow-light);
+  --shadow-orange-hover: 6px 8px 22px rgba(234, 88, 12, 0.48), -5px -5px 12px var(--neu-shadow-light);
+  --shadow-orange-inset: inset 3px 3px 6px rgba(154, 46, 0, 0.45), inset -3px -3px 6px rgba(255, 140, 60, 0.45);
 
-  --lane-progress: #f59e0b;
-  --lane-progress-bg: rgba(245, 158, 11, 0.12);
-  --lane-progress-border: rgba(245, 158, 11, 0.35);
-
-  --lane-done: #10b981;
-  --lane-done-bg: rgba(16, 185, 129, 0.12);
-  --lane-done-border: rgba(16, 185, 129, 0.35);
-
-  /* Priority Colors */
-  --priority-high-bg: rgba(239, 68, 68, 0.15);
-  --priority-high-text: #f87171;
-  --priority-high-border: rgba(239, 68, 68, 0.3);
-
-  --priority-medium-bg: rgba(245, 158, 11, 0.15);
-  --priority-medium-text: #fbbf24;
-  --priority-medium-border: rgba(245, 158, 11, 0.3);
-
-  --priority-low-bg: rgba(16, 185, 129, 0.15);
-  --priority-low-text: #34d399;
-  --priority-low-border: rgba(16, 185, 129, 0.3);
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 12px -1px rgba(0, 0, 0, 0.45);
-  --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.6);
-  --shadow-card-drag: 0 16px 32px -4px rgba(0, 0, 0, 0.7);
-
-  /* Typography & Sizing */
-  --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-pill: 9999px;
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Light Theme Override (Warm Amber Pearl) */
-[data-theme="light"] {
-  --bg-app: #faf8f5;
-  --bg-gradient: radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.12) 0%, rgba(250, 248, 245, 0) 65%);
-  --bg-surface: #ffffff;
-  --bg-surface-elevated: #f7f4ef;
-  --bg-column: rgba(244, 239, 232, 0.88);
-  --bg-card: #ffffff;
-  --bg-card-hover: #fffaf3;
-  --bg-card-active: #faefe0;
-
-  --border-subtle: rgba(0, 0, 0, 0.08);
-  --border-light: rgba(234, 88, 12, 0.2);
-  --border-focus: #ea580c;
-  --border-glow: rgba(234, 88, 12, 0.25);
-
-  --text-primary: #1c1917;
-  --text-secondary: #57534e;
-  --text-muted: #78716c;
+  /* Typography Colors (High contrast slate on soft pearl) */
+  --text-primary: #2d3748;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
   --text-inverse: #ffffff;
 
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 4px 14px -1px rgba(0, 0, 0, 0.09);
-  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.14);
-  --shadow-card-drag: 0 20px 35px -5px rgba(249, 115, 22, 0.2);
+  /* Status Colors */
+  --lane-todo: #f97316;
+  --lane-progress: #3b82f6;
+  --lane-done: #10b981;
+
+  /* Priority Colors */
+  --priority-high: #ef4444;
+  --priority-medium: #f59e0b;
+  --priority-low: #10b981;
+
+  /* Geometry & Motion */
+  --font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-xl: 32px;
+  --radius-pill: 9999px;
+
+  --transition-fast: 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-normal: 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --transition-bounce: 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Legacy variable aliases for smooth compatibility */
+  --bg-app: var(--neu-base);
+  --bg-surface: var(--neu-base);
+  --bg-surface-elevated: var(--neu-base-elevated);
+  --bg-column: var(--neu-base-sunken);
+  --bg-card: var(--neu-base);
+  --bg-card-hover: var(--neu-base);
+  --border-subtle: rgba(184, 193, 209, 0.4);
+  --border-light: rgba(249, 115, 22, 0.25);
+  --border-focus: var(--accent-primary);
+  --shadow-sm: var(--shadow-raised-sm);
+  --shadow-md: var(--shadow-raised);
+  --shadow-lg: var(--shadow-raised-lg);
 }
 
-/* Reset & Base Setup */
+/* ==========================================================
+   Dark Mode Neumorphism (Obsidian Soft UI)
+   ========================================================== */
+[data-theme="dark"] {
+  --neu-base: #181b22;
+  --neu-base-sunken: #12141a;
+  --neu-base-elevated: #1e222a;
+  --neu-convex: linear-gradient(145deg, #1b1f27, #15181f);
+  --neu-concave: linear-gradient(145deg, #15181f, #1b1f27);
+
+  --neu-shadow-dark: #0d0f13;
+  --neu-shadow-light: #242934;
+
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --text-inverse: #181b22;
+
+  --border-subtle: rgba(36, 41, 52, 0.6);
+  --border-light: rgba(249, 115, 22, 0.3);
+
+  --shadow-orange: 5px 6px 18px rgba(249, 115, 22, 0.42), -3px -3px 8px var(--neu-shadow-light);
+  --shadow-orange-hover: 6px 8px 24px rgba(249, 115, 22, 0.58), -4px -4px 10px var(--neu-shadow-light);
+  --shadow-orange-inset: inset 3px 3px 6px rgba(154, 46, 0, 0.55), inset -3px -3px 6px rgba(255, 140, 60, 0.4);
+
+  --bg-app: var(--neu-base);
+  --bg-surface: var(--neu-base);
+  --bg-surface-elevated: var(--neu-base-elevated);
+  --bg-column: var(--neu-base-sunken);
+  --bg-card: var(--neu-base);
+  --bg-card-hover: var(--neu-base);
+}
+
+/* ==========================================================
+   Reset & Base Layout
+   ========================================================== */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -108,11 +130,9 @@
 html, body {
   height: 100%;
   font-family: var(--font-family);
-  background-color: var(--bg-app);
+  background-color: var(--neu-base);
   color: var(--text-primary);
-  background-image: var(--bg-gradient);
   background-attachment: fixed;
-  background-size: 100% 100%;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -124,17 +144,19 @@ html, body {
   flex-direction: column;
 }
 
-/* Custom Scrollbars */
+/* Soft Neumorphic Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--neu-base-sunken);
+  border-radius: var(--radius-pill);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-light);
+  background: var(--neu-shadow-dark);
   border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-raised-xs);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-primary);
@@ -144,33 +166,40 @@ html, body {
    Header & Navigation
    ========================================================== */
 .app-header {
-  height: 64px;
-  background: var(--bg-surface);
-  border-bottom: 1px solid var(--border-subtle);
-  backdrop-filter: blur(12px);
+  height: 68px;
+  background: var(--neu-base);
+  box-shadow: 0 4px 16px var(--neu-shadow-dark);
   position: sticky;
   top: 0;
   z-index: 40;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 1.5rem;
+  padding: 0 1.75rem;
+  transition: all var(--transition-fast);
 }
 
 .brand-section {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .brand-logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 14px var(--accent-glow);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.brand-logo:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: var(--shadow-raised);
 }
 
 .brand-info {
@@ -179,34 +208,25 @@ html, body {
 }
 
 .brand-title {
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 1.12rem;
+  font-weight: 800;
   letter-spacing: -0.02em;
-  background: linear-gradient(135deg, #ffffff 30%, #fed7aa 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-}
-
-[data-theme="light"] .brand-title {
-  background: linear-gradient(135deg, #1c1917 30%, #c2410c 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  gap: 0.45rem;
 }
 
 .brand-badge {
   font-size: 0.65rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  background: rgba(249, 115, 22, 0.15);
-  color: var(--accent-primary);
-  border: 1px solid rgba(249, 115, 22, 0.35);
-  padding: 1px 6px;
-  border-radius: 4px;
+  background: var(--accent-gradient);
+  color: #ffffff;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
   letter-spacing: 0.05em;
-  -webkit-text-fill-color: var(--accent-primary);
+  box-shadow: 0 2px 6px rgba(249, 115, 22, 0.35);
 }
 
 .header-center {
@@ -214,7 +234,7 @@ html, body {
   align-items: center;
   gap: 1rem;
   flex: 1;
-  max-width: 500px;
+  max-width: 480px;
   margin: 0 1.5rem;
 }
 
@@ -225,26 +245,31 @@ html, body {
 
 .search-input {
   width: 100%;
-  height: 36px;
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 0 2.5rem 0 2.25rem;
+  height: 40px;
+  background: var(--neu-base-sunken);
+  box-shadow: var(--shadow-inset-sm);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0 2.8rem 0 2.5rem;
   color: var(--text-primary);
+  font-family: inherit;
   font-size: 0.85rem;
+  font-weight: 500;
   outline: none;
   transition: all var(--transition-fast);
 }
 
 .search-input:focus {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-  background: var(--bg-card);
+  box-shadow: var(--shadow-inset-sm), 0 0 0 2px var(--accent-primary);
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
 }
 
 .search-icon-left {
   position: absolute;
-  left: 0.75rem;
+  left: 0.9rem;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
@@ -253,134 +278,287 @@ html, body {
 
 .search-kbd {
   position: absolute;
-  right: 0.6rem;
+  right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-family: var(--font-mono);
-  background: var(--border-subtle);
-  color: var(--text-muted);
-  padding: 2px 5px;
-  border-radius: 4px;
-  border: 1px solid var(--border-subtle);
+  font-weight: 700;
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-xs);
+  color: var(--text-secondary);
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: none;
   pointer-events: none;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
-/* Primary Button with Warm Orange Gradient */
+/* ==========================================================
+   Buttons - Tactile Soft Neumorphic
+   ========================================================== */
+
+/* Primary Action Button (Tactile Orange Pill) */
 .btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  height: 36px;
-  padding: 0 1rem;
-  background: linear-gradient(135deg, var(--accent-primary) 0%, #ea580c 100%);
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 1.25rem;
+  background: var(--accent-gradient);
   color: #ffffff;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  font-weight: 600;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 0.86rem;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 2px 10px var(--accent-glow);
-  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-orange);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  user-select: none;
 }
 
 .btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.45);
-  background: linear-gradient(135deg, #fb923c 0%, #c2410c 100%);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-orange-hover);
+  background: var(--accent-gradient-hover);
 }
 
 .btn-primary:active {
-  transform: translateY(0);
+  transform: translateY(1px) scale(0.98);
+  box-shadow: var(--shadow-orange-inset);
 }
 
+/* Secondary Button (Soft Convex Pill/Card) */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 40px;
+  padding: 0 1.1rem;
+  background: var(--neu-base);
+  color: var(--text-primary);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-raised-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), color var(--transition-fast);
+  user-select: none;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-raised);
+  color: var(--accent-primary);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: var(--shadow-inset-sm);
+}
+
+/* Icon Button (Tactile Rounded Square / Circle) */
 .btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-sm);
+  border: none;
   color: var(--text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), color var(--transition-fast);
+  user-select: none;
 }
 
 .btn-icon:hover {
-  color: var(--text-primary);
-  border-color: var(--border-light);
-  background: var(--bg-card);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-raised);
+  color: var(--accent-primary);
 }
 
-.btn-secondary {
+.btn-icon:active {
+  transform: translateY(1px) scale(0.96);
+  box-shadow: var(--shadow-inset-sm);
+}
+
+/* Danger Button */
+.btn-danger {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
-  height: 36px;
-  padding: 0 0.85rem;
-  background: var(--bg-surface-elevated);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  height: 40px;
+  padding: 0 1.15rem;
+  background: var(--neu-base);
+  color: #ef4444;
+  border: none;
+  border-radius: var(--radius-pill);
   font-size: 0.85rem;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-raised-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
 }
 
-.btn-secondary:hover {
-  background: var(--bg-card);
-  border-color: var(--border-light);
+.btn-danger:hover {
+  transform: translateY(-2px);
+  background: #ef4444;
+  color: #ffffff;
+  box-shadow: 4px 6px 16px rgba(239, 68, 68, 0.4), -3px -3px 8px var(--neu-shadow-light);
+}
+
+.btn-danger:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: inset 3px 3px 6px rgba(185, 28, 28, 0.6), inset -3px -3px 6px rgba(254, 202, 202, 0.4);
+}
+
+/* Header Avatar Button */
+.header-avatar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-sm);
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.header-avatar-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-raised);
+}
+
+.header-avatar-btn.admin-ring {
+  box-shadow: var(--shadow-raised-sm), 0 0 0 2px var(--accent-primary);
 }
 
 /* ==========================================================
    Filter & Board Status Sub-header
    ========================================================== */
 .board-subbar {
-  padding: 0.85rem 1.5rem;
+  padding: 1rem 1.75rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 1rem;
-  border-bottom: 1px solid var(--border-subtle);
+  gap: 1.25rem;
+  background: transparent;
 }
 
+/* Assignee Filter Trigger */
+.filter-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  height: 38px;
+  padding: 0 1.15rem;
+  background: var(--neu-base);
+  border: none;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-raised-sm);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  user-select: none;
+}
+
+.filter-dropdown-trigger:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-raised);
+}
+
+.filter-dropdown-trigger.active {
+  box-shadow: var(--shadow-inset-sm);
+}
+
+/* Floating Dropdown Menus */
+.filter-dropdown-menu,
+.profile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  background: var(--neu-base);
+  border-radius: 20px;
+  box-shadow: var(--shadow-raised-lg);
+  border: none;
+  padding: 0.65rem;
+  z-index: 60;
+  animation: slideUp 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter-dropdown-menu {
+  left: 0;
+  width: 240px;
+}
+
+.profile-dropdown-menu {
+  right: 0;
+  width: 270px;
+}
+
+.filter-dropdown-item {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.filter-dropdown-item:hover {
+  background: var(--neu-base-sunken);
+  box-shadow: var(--shadow-inset-xs);
+  color: var(--accent-primary);
+}
+
+.filter-dropdown-item.active {
+  background: rgba(249, 115, 22, 0.14);
+  color: var(--accent-primary);
+  font-weight: 700;
+}
+
+/* Priority Segmented Pill Track (Recessed Sunken Well) */
 .filter-group {
   position: relative;
   display: flex;
   align-items: center;
-  background: var(--bg-surface);
+  background: var(--neu-base-sunken);
   padding: 4px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-inset-sm);
+  border: none;
 }
 
-.filter-dropdown-trigger:hover {
-  border-color: var(--border-light) !important;
-  background: var(--bg-surface-elevated) !important;
-}
-
-.filter-dropdown-item:hover {
-  background: var(--bg-surface-elevated) !important;
-  color: var(--text-primary) !important;
-}
-
+/* Sliding Active Pill (Raised Orange Plate) */
 .sliding-pill {
   position: absolute;
   top: 4px;
   bottom: 4px;
-  background: linear-gradient(135deg, var(--accent-primary) 0%, #ea580c 100%);
-  border-radius: var(--radius-sm);
-  box-shadow: 0 2px 10px var(--accent-glow);
+  background: var(--accent-gradient);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-orange);
   transition: left 280ms cubic-bezier(0.16, 1, 0.3, 1), width 280ms cubic-bezier(0.16, 1, 0.3, 1), opacity 150ms ease;
   pointer-events: none;
   z-index: 1;
@@ -392,13 +570,13 @@ html, body {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 5px 12px;
+  padding: 6px 15px;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
   border: none;
   background: transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   cursor: pointer;
   transition: color 180ms ease;
   user-select: none;
@@ -415,25 +593,27 @@ html, body {
 .status-pills {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.75rem;
 }
 
+/* Neumorphic Soft Badges */
 .sync-badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 10px;
+  gap: 0.45rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 6px 14px;
   border-radius: var(--radius-pill);
-  background: rgba(16, 185, 129, 0.12);
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-xs);
   color: #10b981;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  border: none;
 }
 
 .sync-pulse {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #10b981;
   box-shadow: 0 0 8px #10b981;
@@ -449,28 +629,32 @@ html, body {
 .demo-mode-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 10px;
+  gap: 0.45rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 6px 14px;
   border-radius: var(--radius-pill);
-  background: rgba(249, 115, 22, 0.12);
-  color: #fb923c;
-  border: 1px solid rgba(249, 115, 22, 0.3);
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-xs);
+  color: var(--accent-primary);
+  border: none;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .demo-mode-pill:hover {
-  background: rgba(249, 115, 22, 0.22);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-raised-sm);
 }
 
 /* ==========================================================
-   Kanban Board & Columns
+   Kanban Board & Sunken Column Wells
+   Depth Hierarchy:
+   Surface Canvas -> Sunken Column Wells -> Floating Task Cards
    ========================================================== */
 .board-container {
   flex: 1;
-  padding: 1.5rem;
+  padding: 1rem 1.75rem 2rem;
   overflow-x: auto;
   overflow-y: hidden;
   display: flex;
@@ -479,138 +663,161 @@ html, body {
 
 .board-columns-grid {
   display: flex;
-  gap: 1.5rem;
+  gap: 1.75rem;
   min-width: min-content;
   width: 100%;
   align-items: flex-start;
 }
 
+/* Sunken Column Well */
 .kanban-column {
   flex: 1;
   min-width: 320px;
   max-width: 420px;
-  background: var(--bg-column);
-  border: 1px solid var(--border-subtle);
+  background: var(--neu-base-sunken);
+  box-shadow: var(--shadow-inset);
   border-radius: var(--radius-lg);
-  backdrop-filter: blur(16px);
+  border: none;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 160px);
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  max-height: calc(100vh - 170px);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 
 .kanban-column.drag-over {
-  border-color: var(--accent-primary);
-  background: rgba(249, 115, 22, 0.08);
-  box-shadow: 0 0 20px var(--accent-glow);
+  box-shadow: var(--shadow-inset), 0 0 0 2px var(--accent-primary);
 }
 
 .column-header {
-  padding: 1rem 1.15rem;
+  padding: 1.25rem 1.25rem 0.85rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: none;
   position: relative;
 }
 
 .column-title-wrap {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
 }
 
 .column-indicator {
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
+  box-shadow: var(--shadow-raised-xs);
 }
 
 .column-indicator.todo {
   background: var(--lane-todo);
-  box-shadow: 0 0 10px var(--lane-todo);
+  box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
 }
 
 .column-indicator.in_progress {
   background: var(--lane-progress);
-  box-shadow: 0 0 10px var(--lane-progress);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
 }
 
 .column-indicator.done {
   background: var(--lane-done);
-  box-shadow: 0 0 10px var(--lane-done);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
 }
 
 .column-title {
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--text-primary);
 }
 
+/* Extruded Count Chip */
 .column-count-chip {
   font-size: 0.75rem;
-  font-weight: 700;
-  padding: 2px 7px;
+  font-weight: 800;
+  padding: 3px 9px;
   border-radius: var(--radius-pill);
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-xs);
   color: var(--text-secondary);
+  border: none;
 }
 
+/* Circle Add Button */
 .btn-add-column {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  border: 1px solid transparent;
-  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-sm);
+  border: none;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), color var(--transition-fast);
 }
 
 .btn-add-column:hover {
-  background: var(--bg-surface-elevated);
-  color: var(--text-primary);
-  border-color: var(--border-subtle);
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: var(--shadow-raised);
+  color: var(--accent-primary);
 }
 
-/* Card List */
+.btn-add-column:active {
+  transform: translateY(1px) scale(0.95);
+  box-shadow: var(--shadow-inset-xs);
+}
+
+/* Column Card List */
 .column-card-list {
-  padding: 0.85rem;
+  padding: 0.85rem 1.15rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
   flex: 1;
   min-height: 120px;
 }
 
-/* Drop placeholder with Orange glow */
+/* Drop Placeholder with Soft Recessed Depth */
 .drop-placeholder {
-  height: 80px;
-  border: 2px dashed var(--accent-primary);
+  height: 84px;
+  border: 2px dashed rgba(249, 115, 22, 0.45);
   border-radius: var(--radius-md);
-  background: rgba(249, 115, 22, 0.06);
+  background: rgba(249, 115, 22, 0.05);
+  box-shadow: var(--shadow-inset-sm);
   animation: pulse-placeholder 1.5s infinite;
 }
 
 @keyframes pulse-placeholder {
-  0% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0.4; }
+  0% { opacity: 0.5; }
+  50% { opacity: 0.9; }
+  100% { opacity: 0.5; }
+}
+
+.column-empty-state {
+  padding: 2.25rem 1.25rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-xs);
+  border-radius: var(--radius-md);
+  border: none;
+  user-select: none;
 }
 
 /* ==========================================================
-   Task Card
+   Task Card - Floating Raised Neumorphic Plate
    ========================================================== */
 @keyframes cardSlideIn {
   from {
     opacity: 0;
-    transform: translateY(14px) scale(0.98);
+    transform: translateY(12px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -619,13 +826,14 @@ html, body {
 }
 
 .task-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised);
   border-radius: var(--radius-md);
-  padding: 1rem;
+  border: none;
+  padding: 1.15rem;
   cursor: grab;
   position: relative;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
   user-select: none;
   animation: cardSlideIn 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -637,10 +845,8 @@ html, body {
 .task-card:nth-child(5) { animation-delay: 140ms; }
 
 .task-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--border-light);
-  box-shadow: var(--shadow-md);
-  background: var(--bg-card-hover);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-raised-hover);
 }
 
 .task-card:active {
@@ -648,10 +854,9 @@ html, body {
 }
 
 .task-card.dragging {
-  opacity: 0.85;
+  opacity: 0.92;
   transform: scale(1.03) rotate(1.2deg);
-  box-shadow: var(--shadow-card-drag);
-  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-raised-xl);
   z-index: 50;
 }
 
@@ -659,35 +864,48 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
 
 .task-id-badge {
   font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--text-muted);
   letter-spacing: 0.02em;
 }
 
-/* Priority Badges - Clean Neutral Minimal (No red/yellow/green) */
+/* Priority Badges - Recessed Micro-Pills */
 .priority-badge {
   display: inline-flex;
   align-items: center;
   font-size: 0.68rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 2px 7px;
-  border-radius: var(--radius-sm);
-  background: var(--bg-surface-elevated);
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--neu-base-sunken);
+  box-shadow: var(--shadow-inset-xs);
   color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
+  border: none;
+}
+
+.priority-badge.high {
+  color: #ef4444;
+}
+
+.priority-badge.medium {
+  color: #f59e0b;
+}
+
+.priority-badge.low {
+  color: #10b981;
 }
 
 .task-card-title {
-  font-size: 0.92rem;
-  font-weight: 600;
+  font-size: 0.94rem;
+  font-weight: 700;
   line-height: 1.4;
   color: var(--text-primary);
   margin-bottom: 0.45rem;
@@ -698,7 +916,7 @@ html, body {
   font-size: 0.8rem;
   color: var(--text-secondary);
   line-height: 1.45;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -709,8 +927,8 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 0.65rem;
-  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(184, 193, 209, 0.25);
   font-size: 0.75rem;
   color: var(--text-muted);
 }
@@ -718,7 +936,8 @@ html, body {
 .task-card-time {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.35rem;
+  font-weight: 500;
 }
 
 .assignee-avatar-wrap {
@@ -727,68 +946,76 @@ html, body {
 }
 
 .assignee-avatar {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1.5px solid var(--border-light);
+  box-shadow: var(--shadow-raised-xs);
 }
 
 .assignee-initials {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.68rem;
-  font-weight: 700;
+  font-weight: 800;
   color: #ffffff;
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  background: var(--accent-gradient);
+  box-shadow: var(--shadow-raised-xs);
 }
 
+/* Inline Add Task inside Column */
 .column-footer-add {
-  padding: 0.75rem;
-  border-top: 1px solid var(--border-subtle);
+  padding: 0.85rem 1.15rem 1.15rem;
+  border-top: none;
 }
 
 .btn-inline-add {
   width: 100%;
-  padding: 7px 10px;
-  border-radius: var(--radius-md);
-  border: 1px dashed var(--border-subtle);
-  background: transparent;
+  padding: 9px 12px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-sm);
   color: var(--text-secondary);
-  font-size: 0.82rem;
-  font-weight: 500;
+  font-size: 0.84rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), color var(--transition-fast);
 }
 
 .btn-inline-add:hover {
-  background: var(--bg-surface-elevated);
-  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-raised);
   color: var(--accent-primary);
 }
 
+.btn-inline-add:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-inset-xs);
+}
+
 /* ==========================================================
-   Modals & Overlays
+   Modals & Overlays - Master Floating Plates
    ========================================================== */
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
+  background: rgba(30, 41, 59, 0.42);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
   z-index: 100;
-  animation: fadeIn 150ms ease-out;
+  animation: fadeIn 160ms ease-out;
 }
 
 @keyframes fadeIn {
@@ -797,58 +1024,69 @@ html, body {
 }
 
 .modal-content {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  background: var(--neu-base);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-raised-xl);
+  border: none;
   width: 100%;
   max-width: 680px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: slideUp 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUp 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideUp {
-  from { transform: translateY(16px) scale(0.98); opacity: 0; }
+  from { transform: translateY(18px) scale(0.97); opacity: 0; }
   to { transform: translateY(0) scale(1); opacity: 1; }
 }
 
 .modal-header {
-  padding: 1.25rem 1.5rem;
+  padding: 1.35rem 1.75rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: none;
 }
 
 .modal-title {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
   color: var(--text-primary);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
 }
 
 .modal-body {
-  padding: 1.5rem;
+  padding: 0 1.75rem 1.75rem;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.35rem;
 }
 
+.modal-footer {
+  padding: 1.25rem 1.75rem;
+  border-top: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--neu-base);
+}
+
+/* Form Controls (Sunken Inset Wells) */
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: 0.5rem;
 }
 
 .form-label {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.82rem;
+  font-weight: 700;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
@@ -857,21 +1095,21 @@ html, body {
 
 .form-input, .form-textarea, .form-select {
   width: 100%;
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-subtle);
+  background: var(--neu-base-sunken);
+  box-shadow: var(--shadow-inset-sm);
+  border: none;
   border-radius: var(--radius-md);
-  padding: 0.65rem 0.85rem;
+  padding: 0.75rem 1rem;
   color: var(--text-primary);
   font-family: inherit;
   font-size: 0.88rem;
+  font-weight: 500;
   outline: none;
   transition: all var(--transition-fast);
 }
 
 .form-input:focus, .form-textarea:focus, .form-select:focus {
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-  background: var(--bg-card);
+  box-shadow: var(--shadow-inset-sm), 0 0 0 2px var(--accent-primary);
 }
 
 .form-textarea {
@@ -879,20 +1117,25 @@ html, body {
   resize: vertical;
 }
 
+/* Segmented Picker (To Do, In Progress, Done / Low, Med, High) */
 .segmented-picker {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
+  gap: 0.55rem;
+  background: var(--neu-base-sunken);
+  padding: 5px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-inset-sm);
 }
 
 .segmented-option {
-  padding: 0.55rem;
+  padding: 0.65rem;
   text-align: center;
   font-size: 0.82rem;
-  font-weight: 600;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface-elevated);
+  font-weight: 700;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -900,109 +1143,59 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
+  user-select: none;
 }
 
 .segmented-option:hover {
-  background: var(--bg-card);
   color: var(--text-primary);
 }
 
 .segmented-option.selected {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
+  background: var(--accent-gradient);
   color: #ffffff;
-  box-shadow: 0 2px 8px var(--accent-glow);
-}
-
-.modal-footer {
-  padding: 1.15rem 1.5rem;
-  border-top: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bg-surface-elevated);
-}
-
-.btn-danger {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  height: 36px;
-  padding: 0 0.9rem;
-  background: rgba(239, 68, 68, 0.12);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.btn-danger:hover {
-  background: #ef4444;
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  box-shadow: var(--shadow-orange);
 }
 
 /* ==========================================================
-   Access Denied & Security Whitelist View
+   Login Screen & Card
    ========================================================== */
-.access-denied-container {
-  min-height: 80vh;
+.login-container {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1.5rem;
+  background: var(--neu-base);
+  position: relative;
+  overflow: hidden;
 }
 
-.access-denied-card {
-  max-width: 500px;
+.login-glow-orb {
+  position: absolute;
+  width: 440px;
+  height: 440px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.16) 0%, rgba(249, 115, 22, 0) 70%);
+  top: 15%;
+  left: 20%;
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+.login-card {
+  position: relative;
+  z-index: 2;
+  max-width: 440px;
   width: 100%;
-  background: var(--bg-surface);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: var(--radius-lg);
-  padding: 2.5rem;
-  text-align: center;
-  box-shadow: 0 10px 30px -5px rgba(239, 68, 68, 0.2);
+  background: var(--neu-base);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-raised-xl);
+  border: none;
+  padding: 2.75rem 2.25rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.access-denied-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: rgba(239, 68, 68, 0.12);
-  color: #ef4444;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
-}
-
-.access-denied-title {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #ef4444;
-}
-
-.access-denied-desc {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.access-denied-email {
-  font-family: var(--font-mono);
-  background: var(--bg-surface-elevated);
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  color: var(--text-primary);
-  border: 1px solid var(--border-subtle);
-  font-size: 0.85rem;
+  gap: 1.5rem;
+  animation: slideUp 240ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ==========================================================
@@ -1010,26 +1203,27 @@ html, body {
    ========================================================== */
 .toast-container {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
+  bottom: 1.75rem;
+  right: 1.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.65rem;
   z-index: 200;
 }
 
 .toast {
-  background: var(--bg-surface-elevated);
-  border: 1px solid var(--border-light);
+  background: var(--neu-base);
   border-radius: var(--radius-md);
-  padding: 0.75rem 1rem;
-  box-shadow: var(--shadow-lg);
+  padding: 0.85rem 1.25rem;
+  box-shadow: var(--shadow-raised);
+  border: none;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.75rem;
   font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text-primary);
-  animation: slideInToast 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideInToast 220ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideInToast {
@@ -1038,37 +1232,60 @@ html, body {
 }
 
 .toast.success {
-  border-left: 3px solid #10b981;
+  border-left: 4px solid #10b981;
 }
 
 .toast.info {
-  border-left: 3px solid var(--accent-primary);
+  border-left: 4px solid var(--accent-primary);
 }
 
 .toast.danger {
-  border-left: 3px solid #ef4444;
+  border-left: 4px solid #ef4444;
+}
+
+/* Neumorphic List Items & Cards in Modals */
+.neu-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.15rem;
+  background: var(--neu-base);
+  box-shadow: var(--shadow-raised-sm);
+  border-radius: var(--radius-md);
+  border: none;
+  gap: 1rem;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.neu-list-item:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-raised);
 }
 
 /* ==========================================================
-   Responsive Rules
+   Responsive Adaptations
    ========================================================== */
 @media (max-width: 768px) {
   .app-header {
-    padding: 0 1rem;
+    padding: 0 1.25rem;
   }
   .header-center {
     display: none;
   }
   .board-subbar {
-    padding: 0.75rem 1rem;
+    padding: 0.85rem 1.25rem;
+  }
+  .board-container {
+    padding: 0.5rem 1.25rem 1.5rem;
   }
   .board-columns-grid {
-    gap: 1rem;
+    gap: 1.25rem;
   }
   .kanban-column {
     min-width: 85vw;
   }
   .modal-content {
     max-height: 95vh;
+    border-radius: var(--radius-lg);
   }
 }

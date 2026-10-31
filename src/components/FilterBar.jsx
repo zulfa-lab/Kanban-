@@ -120,24 +120,8 @@ export const FilterBar = ({
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <button
             type="button"
-            className="filter-dropdown-trigger"
+            className={`filter-dropdown-trigger ${isDropdownOpen ? 'active' : ''}`}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              height: 34,
-              padding: '0 0.85rem',
-              background: 'var(--bg-surface)',
-              border: isDropdownOpen ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
-              borderRadius: 'var(--radius-md)',
-              color: 'var(--text-primary)',
-              fontSize: '0.82rem',
-              fontWeight: 600,
-              cursor: 'pointer',
-              boxShadow: isDropdownOpen ? '0 0 12px var(--accent-glow)' : 'none',
-              transition: 'all var(--transition-fast)'
-            }}
           >
             <span style={{ display: 'flex', alignItems: 'center' }}>
               {activeInfo.icon}
@@ -155,22 +139,7 @@ export const FilterBar = ({
 
           {/* Dropdown Menu */}
           {isDropdownOpen && (
-            <div
-              className="filter-dropdown-menu"
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 6px)',
-                left: 0,
-                width: 230,
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-light)',
-                borderRadius: 'var(--radius-md)',
-                boxShadow: 'var(--shadow-lg)',
-                padding: '0.4rem',
-                zIndex: 60,
-                animation: 'slideUp 160ms cubic-bezier(0.16, 1, 0.3, 1)'
-              }}
-            >
+            <div className="filter-dropdown-menu">
               {/* Option 1: All Tasks */}
               <button
                 type="button"

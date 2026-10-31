@@ -26,9 +26,9 @@ export const DeleteConfirmModal = ({ isOpen, taskTitle, onConfirm, onCancel }) =
             Are you sure you want to permanently delete this task?
           </p>
           <div style={{
-            padding: '0.75rem',
-            background: 'var(--bg-surface-elevated)',
-            border: '1px solid var(--border-subtle)',
+            padding: '0.85rem 1rem',
+            background: 'var(--neu-base-sunken)',
+            boxShadow: 'var(--shadow-inset-sm)',
             borderRadius: 'var(--radius-md)',
             fontStyle: 'italic',
             fontSize: '0.85rem',

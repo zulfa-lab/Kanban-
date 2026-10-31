@@ -25,9 +25,9 @@ import { Zap } from 'lucide-react';
 export function App() {
   const { user, loading, isAdmin } = useAuth();
 
-  // App Theme: 'dark' (default) or 'light'
+  // App Theme: 'light' (default neumorphism) or 'dark'
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('jira_lite_theme') || 'dark';
+    return localStorage.getItem('jira_lite_theme') || 'light';
   });
 
   // Tasks state

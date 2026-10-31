@@ -242,81 +242,31 @@ export const EditProfileModal = ({ isOpen, onClose, onProfileUpdated }) => {
 
           {/* Option Tabs */}
           <div>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              background: 'var(--bg-surface-elevated)',
-              padding: 3,
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--border-subtle)',
-              marginBottom: '1rem'
-            }}>
+            <div className="segmented-picker" style={{ marginBottom: '1.25rem' }}>
               <button
                 type="button"
+                className={`segmented-option ${activeTab === 'upload' ? 'selected' : ''}`}
                 onClick={() => setActiveTab('upload')}
-                style={{
-                  padding: '6px 8px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: 'none',
-                  background: activeTab === 'upload' ? 'var(--accent-primary)' : 'transparent',
-                  color: activeTab === 'upload' ? '#ffffff' : 'var(--text-secondary)',
-                  fontWeight: 600,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '4px',
-                  transition: 'all var(--transition-fast)'
-                }}
               >
-                <Upload size={13} />
+                <Upload size={14} />
                 <span>Upload</span>
               </button>
 
               <button
                 type="button"
+                className={`segmented-option ${activeTab === 'preset' ? 'selected' : ''}`}
                 onClick={() => setActiveTab('preset')}
-                style={{
-                  padding: '6px 8px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: 'none',
-                  background: activeTab === 'preset' ? 'var(--accent-primary)' : 'transparent',
-                  color: activeTab === 'preset' ? '#ffffff' : 'var(--text-secondary)',
-                  fontWeight: 600,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '4px',
-                  transition: 'all var(--transition-fast)'
-                }}
               >
-                <Sparkles size={13} />
+                <Sparkles size={14} />
                 <span>Pilih Koleksi</span>
               </button>
 
               <button
                 type="button"
+                className={`segmented-option ${activeTab === 'url' ? 'selected' : ''}`}
                 onClick={() => setActiveTab('url')}
-                style={{
-                  padding: '6px 8px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: 'none',
-                  background: activeTab === 'url' ? 'var(--accent-primary)' : 'transparent',
-                  color: activeTab === 'url' ? '#ffffff' : 'var(--text-secondary)',
-                  fontWeight: 600,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '4px',
-                  transition: 'all var(--transition-fast)'
-                }}
               >
-                <LinkIcon size={13} />
+                <LinkIcon size={14} />
                 <span>URL Link</span>
               </button>
             </div>

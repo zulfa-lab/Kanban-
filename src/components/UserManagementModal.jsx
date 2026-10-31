@@ -155,55 +155,26 @@ export const UserManagementModal = ({ isOpen, onClose, onUserAdded }) => {
         </div>
 
         {/* Tab Switcher */}
-        <div style={{
-          padding: '0.75rem 1.5rem 0',
-          borderBottom: '1px solid var(--border-subtle)',
-          display: 'flex',
-          gap: '1rem'
-        }}>
-          <button
-            type="button"
-            onClick={() => { setActiveTab('list'); setFormError(''); }}
-            style={{
-              padding: '0.5rem 0.25rem',
-              border: 'none',
-              background: 'transparent',
-              color: activeTab === 'list' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-              borderBottom: activeTab === 'list' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-              fontWeight: activeTab === 'list' ? 700 : 500,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all var(--transition-fast)'
-            }}
-          >
-            <Users size={15} />
-            <span>Daftar Pengguna ({users.length})</span>
-          </button>
+        <div style={{ padding: '0 1.75rem 0.5rem' }}>
+          <div className="segmented-picker" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+            <button
+              type="button"
+              className={`segmented-option ${activeTab === 'list' ? 'selected' : ''}`}
+              onClick={() => { setActiveTab('list'); setFormError(''); }}
+            >
+              <Users size={15} />
+              <span>Daftar Pengguna ({users.length})</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={() => { setActiveTab('add'); setFormError(''); }}
-            style={{
-              padding: '0.5rem 0.25rem',
-              border: 'none',
-              background: 'transparent',
-              color: activeTab === 'add' ? 'var(--accent-primary)' : 'var(--text-secondary)',
-              borderBottom: activeTab === 'add' ? '2px solid var(--accent-primary)' : '2px solid transparent',
-              fontWeight: activeTab === 'add' ? 700 : 500,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              transition: 'all var(--transition-fast)'
-            }}
-          >
-            <UserPlus size={15} />
-            <span>+ Tambah Pengguna Baru</span>
-          </button>
+            <button
+              type="button"
+              className={`segmented-option ${activeTab === 'add' ? 'selected' : ''}`}
+              onClick={() => { setActiveTab('add'); setFormError(''); }}
+            >
+              <UserPlus size={15} />
+              <span>+ Tambah Baru</span>
+            </button>
+          </div>
         </div>
 
         {/* Modal Body */}
@@ -223,16 +194,7 @@ export const UserManagementModal = ({ isOpen, onClose, onUserAdded }) => {
                   return (
                     <div
                       key={u.id || u.username}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '0.75rem 1rem',
-                        background: 'var(--bg-surface-elevated)',
-                        border: '1px solid var(--border-subtle)',
-                        borderRadius: 'var(--radius-md)',
-                        gap: '1rem'
-                      }}
+                      className="neu-list-item"
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         {u.avatar ? (

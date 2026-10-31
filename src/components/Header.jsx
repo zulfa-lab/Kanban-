@@ -151,16 +151,8 @@ export const Header = ({
         {/* User avatar & dropdown */}
         <div className="assignee-avatar-wrap" ref={profileRef} style={{ cursor: 'pointer' }}>
           <div
+            className={`header-avatar-btn ${isAdmin ? 'admin-ring' : ''}`}
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '2px',
-              borderRadius: 'var(--radius-pill)',
-              border: isAdmin ? '1.5px solid var(--accent-primary)' : '1.5px solid var(--border-subtle)',
-              background: 'var(--bg-surface-elevated)'
-            }}
           >
             {user?.avatar ? (
               <img
@@ -176,7 +168,7 @@ export const Header = ({
                   borderRadius: '50%',
                   background: isAdmin 
                     ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' 
-                    : 'var(--bg-card)',
+                    : 'var(--neu-bg-sunken)',
                   color: isAdmin ? '#ffffff' : 'var(--text-primary)',
                   display: 'flex',
                   alignItems: 'center',
@@ -192,21 +184,7 @@ export const Header = ({
 
           {/* Profile Dropdown Menu */}
           {isProfileMenuOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 8px)',
-                right: 0,
-                width: 260,
-                background: 'var(--bg-surface)',
-                border: '1px solid var(--border-light)',
-                borderRadius: 'var(--radius-md)',
-                boxShadow: 'var(--shadow-lg)',
-                padding: '0.75rem',
-                zIndex: 60,
-                animation: 'slideUp 150ms ease-out'
-              }}
-            >
+            <div className="profile-dropdown-menu">
               <div style={{ marginBottom: '0.65rem', paddingBottom: '0.65rem', borderBottom: '1px solid var(--border-subtle)' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
                   {user?.name || user?.username}

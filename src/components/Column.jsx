@@ -79,14 +79,7 @@ export const Column = ({
         )}
 
         {tasks.length === 0 && !isDragOver && (
-          <div style={{
-            padding: '2rem 1rem',
-            textAlign: 'center',
-            color: 'var(--text-muted)',
-            fontSize: '0.82rem',
-            border: '1px dashed var(--border-subtle)',
-            borderRadius: 'var(--radius-md)'
-          }}>
+          <div className="column-empty-state">
             No tasks in {title}
           </div>
         )}

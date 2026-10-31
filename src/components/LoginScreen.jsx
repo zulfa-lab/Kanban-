@@ -33,43 +33,11 @@ export const LoginScreen = () => {
   };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '1.5rem',
-      background: 'radial-gradient(circle at 50% 25%, rgba(249, 115, 22, 0.16) 0%, var(--bg-app) 75%)',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
+    <div className="login-container">
       {/* Background glow orbs */}
-      <div style={{
-        position: 'absolute',
-        width: 380,
-        height: 380,
-        borderRadius: '50%',
-        background: 'rgba(249, 115, 22, 0.12)',
-        filter: 'blur(90px)',
-        top: '15%',
-        left: '20%',
-        pointerEvents: 'none'
-      }} />
+      <div className="login-glow-orb" />
 
-      <div style={{
-        position: 'relative',
-        zIndex: 2,
-        maxWidth: 420,
-        width: '100%',
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border-light)',
-        borderRadius: 'var(--radius-lg)',
-        padding: '2.5rem 2rem',
-        boxShadow: 'var(--shadow-lg)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1.5rem'
-      }}>
+      <div className="login-card">
         {/* Brand Emblem */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '0.75rem' }}>
           <div className="brand-logo" style={{ width: 56, height: 56, borderRadius: 14 }}>
