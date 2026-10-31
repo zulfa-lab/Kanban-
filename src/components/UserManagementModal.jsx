@@ -156,10 +156,14 @@ export const UserManagementModal = ({ isOpen, onClose, onUserAdded }) => {
 
         {/* Tab Switcher */}
         <div style={{ padding: '0 1.75rem 0.5rem' }}>
-          <div className="segmented-picker" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
+          <div className="neu-segmented-slider two-options">
+            <div 
+              className="neu-slider-pill" 
+              style={{ transform: `translateX(${activeTab === 'list' ? 0 : 100}%)` }}
+            />
             <button
               type="button"
-              className={`segmented-option ${activeTab === 'list' ? 'selected' : ''}`}
+              className={`neu-slider-btn ${activeTab === 'list' ? 'active' : ''}`}
               onClick={() => { setActiveTab('list'); setFormError(''); }}
             >
               <Users size={15} />
@@ -168,7 +172,7 @@ export const UserManagementModal = ({ isOpen, onClose, onUserAdded }) => {
 
             <button
               type="button"
-              className={`segmented-option ${activeTab === 'add' ? 'selected' : ''}`}
+              className={`neu-slider-btn ${activeTab === 'add' ? 'active' : ''}`}
               onClick={() => { setActiveTab('add'); setFormError(''); }}
             >
               <UserPlus size={15} />

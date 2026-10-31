@@ -151,30 +151,31 @@ export const Header = ({
         {/* User avatar & dropdown */}
         <div className="assignee-avatar-wrap" ref={profileRef} style={{ cursor: 'pointer' }}>
           <div
-            className={`header-avatar-btn ${isAdmin ? 'admin-ring' : ''}`}
+            className={`header-avatar-btn ${isAdmin ? 'admin-ring' : ''} ${isProfileMenuOpen ? 'active' : ''}`}
             onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+            title={user?.name || user?.username}
           >
             {user?.avatar ? (
               <img
                 src={user.avatar}
                 alt={user.name || user.username}
-                style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }}
+                style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover' }}
               />
             ) : (
               <div
                 style={{
-                  width: 28,
-                  height: 28,
+                  width: 30,
+                  height: 30,
                   borderRadius: '50%',
                   background: isAdmin 
                     ? 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)' 
-                    : 'var(--neu-bg-sunken)',
+                    : 'var(--neu-base-sunken)',
                   color: isAdmin ? '#ffffff' : 'var(--text-primary)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '0.75rem',
-                  fontWeight: 700
+                  fontSize: '0.78rem',
+                  fontWeight: 800
                 }}
               >
                 {user?.name ? user.name[0].toUpperCase() : 'U'}
@@ -182,121 +183,86 @@ export const Header = ({
             )}
           </div>
 
-          {/* Profile Dropdown Menu */}
+          {/* Profile Dropdown Menu - Tactile Soft Neumorphic Card */}
           {isProfileMenuOpen && (
             <div className="profile-dropdown-menu">
-              <div style={{ marginBottom: '0.65rem', paddingBottom: '0.65rem', borderBottom: '1px solid var(--border-subtle)' }}>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-primary)' }}>
-                  {user?.name || user?.username}
+              {/* Profile Card Header (Matching Reference Image) */}
+              <div className="neu-profile-header">
+                <div className="neu-profile-avatar-wrap">
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name || user.username}
+                      className="neu-profile-avatar"
+                    />
+                  ) : (
+                    <div className="neu-profile-avatar-initials">
+                      {user?.name ? user.name[0].toUpperCase() : 'U'}
+                    </div>
+                  )}
+                  {isAdmin && (
+                    <div className="neu-profile-badge-check" title="Administrator">
+                      <ShieldCheck size={12} color="#ffffff" />
+                    </div>
+                  )}
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  @{user?.username}
-                </div>
-                <div style={{
-                  marginTop: '0.4rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '0.68rem',
-                  fontWeight: 700,
-                  color: isAdmin ? '#f97316' : '#10b981',
-                  background: isAdmin ? 'rgba(249, 115, 22, 0.12)' : 'rgba(16, 185, 129, 0.12)',
-                  padding: '2px 7px',
-                  borderRadius: 'var(--radius-pill)',
-                  border: isAdmin ? '1px solid rgba(249, 115, 22, 0.25)' : '1px solid rgba(16, 185, 129, 0.25)'
-                }}>
-                  <ShieldCheck size={11} />
-                  <span>{isAdmin ? 'Administrator' : 'Standard User'}</span>
+
+                <div className="neu-profile-info">
+                  <div className="neu-profile-name">
+                    {user?.name || user?.username}
+                  </div>
+                  <div className="neu-profile-handle">
+                    @{user?.username}
+                  </div>
+                  <div className="neu-profile-role-pill">
+                    {isAdmin ? 'Administrator' : 'Standard User'}
+                  </div>
                 </div>
               </div>
 
-              {/* Edit Profile / Avatar Button */}
-              <div style={{ marginBottom: '0.4rem', paddingBottom: '0.4rem', borderBottom: '1px solid var(--border-subtle)' }}>
+              {/* Action Buttons as Tactile Raised Plates */}
+              <div className="neu-profile-actions">
                 <button
                   type="button"
-                  style={{
-                    width: '100%',
-                    padding: '7px 8px',
-                    fontSize: '0.8rem',
-                    borderRadius: 'var(--radius-sm)',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--text-primary)',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontWeight: 500,
-                    transition: 'all var(--transition-fast)'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-surface-elevated)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                  className="neu-profile-btn"
                   onClick={() => {
                     onOpenEditProfile();
                     setIsProfileMenuOpen(false);
                   }}
                 >
-                  <Camera size={14} color="var(--accent-primary)" />
+                  <div className="neu-profile-btn-icon orange">
+                    <Camera size={15} />
+                  </div>
                   <span>Ganti Foto Profil</span>
                 </button>
-              </div>
 
-              {/* Admin Manage User Option */}
-              {isAdmin && (
-                <div style={{ marginBottom: '0.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                {isAdmin && (
                   <button
                     type="button"
-                    style={{
-                      width: '100%',
-                      padding: '7px 8px',
-                      fontSize: '0.8rem',
-                      borderRadius: 'var(--radius-sm)',
-                      border: 'none',
-                      background: 'rgba(249, 115, 22, 0.1)',
-                      color: 'var(--accent-primary)',
-                      textAlign: 'left',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      fontWeight: 600
-                    }}
+                    className="neu-profile-btn"
                     onClick={() => {
                       onOpenUserManagement();
                       setIsProfileMenuOpen(false);
                     }}
                   >
-                    <Users size={14} />
+                    <div className="neu-profile-btn-icon orange">
+                      <Users size={15} />
+                    </div>
                     <span>Kelola Pengguna ({users.length})</span>
                   </button>
-                </div>
-              )}
+                )}
 
-              {/* Sign Out Button */}
-              <div style={{ paddingTop: '0.4rem', borderTop: '1px solid var(--border-subtle)' }}>
                 <button
                   type="button"
-                  style={{
-                    width: '100%',
-                    padding: '6px 8px',
-                    fontSize: '0.78rem',
-                    borderRadius: 'var(--radius-sm)',
-                    border: 'none',
-                    background: 'transparent',
-                    color: 'var(--text-secondary)',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
+                  className="neu-profile-btn logout"
                   onClick={() => {
                     logout();
                     setIsProfileMenuOpen(false);
                   }}
                 >
-                  <LogOut size={13} />
+                  <div className="neu-profile-btn-icon red">
+                    <LogOut size={15} />
+                  </div>
                   <span>Sign Out (Keluar)</span>
                 </button>
               </div>

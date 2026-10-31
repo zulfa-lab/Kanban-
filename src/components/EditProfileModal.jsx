@@ -242,10 +242,14 @@ export const EditProfileModal = ({ isOpen, onClose, onProfileUpdated }) => {
 
           {/* Option Tabs */}
           <div>
-            <div className="segmented-picker" style={{ marginBottom: '1.25rem' }}>
+            <div className="neu-segmented-slider" style={{ marginBottom: '1.25rem' }}>
+              <div 
+                className="neu-slider-pill" 
+                style={{ transform: `translateX(${['upload', 'preset', 'url'].indexOf(activeTab) * 100}%)` }}
+              />
               <button
                 type="button"
-                className={`segmented-option ${activeTab === 'upload' ? 'selected' : ''}`}
+                className={`neu-slider-btn ${activeTab === 'upload' ? 'active' : ''}`}
                 onClick={() => setActiveTab('upload')}
               >
                 <Upload size={14} />
@@ -254,7 +258,7 @@ export const EditProfileModal = ({ isOpen, onClose, onProfileUpdated }) => {
 
               <button
                 type="button"
-                className={`segmented-option ${activeTab === 'preset' ? 'selected' : ''}`}
+                className={`neu-slider-btn ${activeTab === 'preset' ? 'active' : ''}`}
                 onClick={() => setActiveTab('preset')}
               >
                 <Sparkles size={14} />
@@ -263,7 +267,7 @@ export const EditProfileModal = ({ isOpen, onClose, onProfileUpdated }) => {
 
               <button
                 type="button"
-                className={`segmented-option ${activeTab === 'url' ? 'selected' : ''}`}
+                className={`neu-slider-btn ${activeTab === 'url' ? 'active' : ''}`}
                 onClick={() => setActiveTab('url')}
               >
                 <LinkIcon size={14} />

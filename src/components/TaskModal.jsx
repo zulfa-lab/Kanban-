@@ -73,6 +73,12 @@ export const TaskModal = ({
     });
   };
 
+  const STATUS_OPTIONS = ['todo', 'in_progress', 'done'];
+  const statusIndex = Math.max(0, STATUS_OPTIONS.indexOf(status));
+
+  const PRIORITY_OPTIONS = ['low', 'medium', 'high'];
+  const priorityIndex = Math.max(0, PRIORITY_OPTIONS.indexOf(priority));
+
   return (
     <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -137,8 +143,8 @@ export const TaskModal = ({
                   minHeight: 100,
                   padding: '0.75rem',
                   borderRadius: 'var(--radius-md)',
-                  background: 'var(--bg-surface-elevated)',
-                  border: '1px solid var(--border-subtle)',
+                  background: 'var(--neu-base-sunken)',
+                  boxShadow: 'var(--shadow-inset-sm)',
                   fontSize: '0.85rem',
                   lineHeight: 1.5,
                   whiteSpace: 'pre-wrap',
@@ -157,27 +163,31 @@ export const TaskModal = ({
               )}
             </div>
 
-            {/* Status Picker */}
+            {/* Status Picker with Smooth Animated Sliding Pill */}
             <div className="form-group">
               <label className="form-label">Status</label>
-              <div className="segmented-picker">
+              <div className="neu-segmented-slider">
+                <div 
+                  className="neu-slider-pill" 
+                  style={{ transform: `translateX(${statusIndex * 100}%)` }}
+                />
                 <button
                   type="button"
-                  className={`segmented-option ${status === 'todo' ? 'selected' : ''}`}
+                  className={`neu-slider-btn ${status === 'todo' ? 'active' : ''}`}
                   onClick={() => setStatus('todo')}
                 >
                   To Do
                 </button>
                 <button
                   type="button"
-                  className={`segmented-option ${status === 'in_progress' ? 'selected' : ''}`}
+                  className={`neu-slider-btn ${status === 'in_progress' ? 'active' : ''}`}
                   onClick={() => setStatus('in_progress')}
                 >
                   In Progress
                 </button>
                 <button
                   type="button"
-                  className={`segmented-option ${status === 'done' ? 'selected' : ''}`}
+                  className={`neu-slider-btn ${status === 'done' ? 'active' : ''}`}
                   onClick={() => setStatus('done')}
                 >
                   Done
@@ -185,27 +195,31 @@ export const TaskModal = ({
               </div>
             </div>
 
-            {/* Priority Picker */}
+            {/* Priority Picker with Smooth Animated Sliding Pill */}
             <div className="form-group">
               <label className="form-label">Priority</label>
-              <div className="segmented-picker">
+              <div className="neu-segmented-slider">
+                <div 
+                  className="neu-slider-pill" 
+                  style={{ transform: `translateX(${priorityIndex * 100}%)` }}
+                />
                 <button
                   type="button"
-                  className={`segmented-option ${priority === 'low' ? 'selected' : ''}`}
+                  className={`neu-slider-btn ${priority === 'low' ? 'active' : ''}`}
                   onClick={() => setPriority('low')}
                 >
                   Low
                 </button>
                 <button
                   type="button"
-                  className={`segmented-option ${priority === 'medium' ? 'selected' : ''}`}
+                  className={`neu-slider-btn ${priority === 'medium' ? 'active' : ''}`}
                   onClick={() => setPriority('medium')}
                 >
                   Medium
                 </button>
                 <button
                   type="button"
-                  className={`segmented-option ${priority === 'high' ? 'selected' : ''}`}
+                  className={`neu-slider-btn ${priority === 'high' ? 'active' : ''}`}
                   onClick={() => setPriority('high')}
                 >
                   High
