@@ -8,8 +8,8 @@ import {
   LogOut, 
   Users, 
   ShieldCheck, 
-  UserCheck,
-  Camera 
+  Camera,
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -25,8 +25,10 @@ export const Header = ({
 }) => {
   const { user, users, logout, isAdmin } = useAuth();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const profileRef = useRef(null);
   const searchInputRef = useRef(null);
+  const mobileSearchInputRef = useRef(null);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -60,7 +62,8 @@ export const Header = ({
   }, [onCreateIssueClick]);
 
   return (
-    <header className="app-header">
+    <>
+      <header className="app-header">
       {/* Brand logo & title */}
       <div className="brand-section">
         <div className="brand-logo">
@@ -103,6 +106,26 @@ export const Header = ({
 
       {/* Action buttons */}
       <div className="header-actions">
+        {/* Mobile Search Toggle Button */}
+        <button
+          type="button"
+          className={`btn-icon mobile-search-toggle-btn ${searchQuery.trim() ? 'has-query' : ''} ${isMobileSearchOpen ? 'active' : ''}`}
+          onClick={() => {
+            const next = !isMobileSearchOpen;
+            setIsMobileSearchOpen(next);
+            if (next) {
+              setTimeout(() => {
+                mobileSearchInputRef.current?.focus();
+              }, 60);
+            }
+          }}
+          title="Cari task"
+          aria-label="Cari task"
+        >
+          <Search size={16} />
+          {searchQuery.trim() && <span className="mobile-search-badge" />}
+        </button>
+
         {/* Admin Manage Users button */}
         {isAdmin && (
           <button
@@ -270,5 +293,41 @@ export const Header = ({
         </div>
       </div>
     </header>
-  );
+
+    {/* Expandable Mobile Search Bar */}
+    {isMobileSearchOpen && (
+      <div className="mobile-search-dropdown-bar">
+        <div className="mobile-search-inner">
+          <Search size={15} className="mobile-search-left-icon" />
+          <input
+            ref={mobileSearchInputRef}
+            type="text"
+            className="mobile-search-input"
+            placeholder="Cari task, tiket, deskripsi..."
+            value={searchQuery}
+            onChange={(e) => onSearchChange(e.target.value)}
+            autoFocus
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              className="mobile-search-clear-btn"
+              onClick={() => onSearchChange('')}
+              title="Hapus pencarian"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        <button
+          type="button"
+          className="mobile-search-cancel-btn"
+          onClick={() => setIsMobileSearchOpen(false)}
+        >
+          Tutup
+        </button>
+      </div>
+    )}
+  </>
+);
 };
