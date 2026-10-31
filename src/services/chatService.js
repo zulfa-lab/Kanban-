@@ -4,16 +4,18 @@ import {
   collection, 
   doc,
   setDoc,
+  getDoc,
+  getDocs,
   deleteDoc,
   onSnapshot, 
   serverTimestamp 
 } from './firebase';
 
 const LOCAL_STORAGE_CHAT_KEY = 'jira_lite_chat_messages_v1';
-const CHAT_INITIALIZED_KEY = 'jira_lite_chat_initialized_v1';
+const CHAT_INITIALIZED_KEY = 'jira_lite_chat_initialized_v2';
 const BROADCAST_CHAT_CHANNEL = 'jira_lite_chat_bus';
 
-// Initial conversation seed to make the chat lively right away
+// Initial conversation seed for brand new workspace
 export const INITIAL_MESSAGES = [
   {
     id: 'msg-init-1',
@@ -59,7 +61,7 @@ export const INITIAL_MESSAGES = [
   }
 ];
 
-// Helper: BroadcastChannel for real-time multi-tab chat in Sandbox mode
+// Helper: BroadcastChannel for real-time multi-tab chat
 let chatChannel = null;
 if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
   try {
@@ -69,7 +71,7 @@ if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
   }
 }
 
-// Web Audio API synthesizer for pleasant chime sound (zero external audio file dependency)
+// Web Audio API chime generator
 export const playChatChime = () => {
   try {
     const isMuted = localStorage.getItem('jira_chat_sound_muted') === 'true';
@@ -81,12 +83,11 @@ export const playChatChime = () => {
     const ctx = new AudioContextClass();
     const now = ctx.currentTime;
 
-    // First note (587.33 Hz - D5)
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = 'sine';
     osc1.frequency.setValueAtTime(587.33, now);
-    osc1.frequency.exponentialRampToValueAtTime(880, now + 0.08); // slide to A5
+    osc1.frequency.exponentialRampToValueAtTime(880, now + 0.08);
 
     gain1.gain.setValueAtTime(0.12, now);
     gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
@@ -97,7 +98,7 @@ export const playChatChime = () => {
     osc1.start(now);
     osc1.stop(now + 0.24);
   } catch {
-    // AudioContext blocked or user hasn't interacted yet
+    // AudioContext blocked
   }
 };
 
@@ -113,7 +114,7 @@ export const getDmChannelId = (userA, userB) => {
 export const getStoredMessages = () => {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_CHAT_KEY);
-    const hasInitialized = localStorage.getItem(CHAT_INITIALIZED_KEY);
+    const hasInitialized = localStorage.getItem(CHAT_INITIALIZED_KEY) === 'true';
 
     if (raw === null) {
       if (!hasInitialized) {
@@ -144,9 +145,16 @@ export const saveStoredMessages = (messages) => {
   }
 };
 
+const saveStoredMessagesSilently = (messages) => {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_CHAT_KEY, JSON.stringify(messages));
+  } catch {
+    // ignore
+  }
+};
+
 /**
- * Subscribe to chat messages with real-time sync (Firestore AND LocalStorage/BroadcastChannel).
- * Always keeps local listener active for instant 0ms responses.
+ * Subscribe to chat messages with real-time sync.
  */
 export const subscribeToChatMessages = (onMessagesUpdated, onError) => {
   let unsubscribeFirestore = null;
@@ -154,7 +162,7 @@ export const subscribeToChatMessages = (onMessagesUpdated, onError) => {
   // 1. Initial immediate emit from local storage cache
   onMessagesUpdated(getStoredMessages());
 
-  // 2. Set up local listeners (active concurrently)
+  // 2. Set up local listeners (always active concurrently)
   const handleStorageChange = (e) => {
     if (e.key === LOCAL_STORAGE_CHAT_KEY) {
       onMessagesUpdated(getStoredMessages());
@@ -196,8 +204,8 @@ export const subscribeToChatMessages = (onMessagesUpdated, onError) => {
                 ts = data.serverCreatedAt.toDate().toISOString();
               }
               return {
-                id: d.id,
                 ...data,
+                id: d.id, // Primary key is always Firestore document ID
                 createdAt: ts || new Date().toISOString(),
               };
             });
@@ -205,30 +213,53 @@ export const subscribeToChatMessages = (onMessagesUpdated, onError) => {
             // Sort chronologically ascending
             cloudMessages.sort((a, b) => new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime());
 
-            // Cache in local storage
-            try {
-              localStorage.setItem(LOCAL_STORAGE_CHAT_KEY, JSON.stringify(cloudMessages));
-            } catch {
-              // ignore quota
-            }
-
+            localStorage.setItem(CHAT_INITIALIZED_KEY, 'true');
+            saveStoredMessagesSilently(cloudMessages);
             onMessagesUpdated(cloudMessages);
           } else {
-            // First time in Firestore: seed initial messages using setDoc
-            const local = getStoredMessages();
-            const toSeed = local.length > 0 ? local : INITIAL_MESSAGES;
-            for (const msg of toSeed) {
+            // Snapshot is empty: check if intentionally cleared or brand new
+            const localInitialized = localStorage.getItem(CHAT_INITIALIZED_KEY) === 'true';
+            let cloudInitialized = false;
+
+            try {
+              const initDoc = await getDoc(doc(db, 'system_settings', 'chat_init'));
+              cloudInitialized = initDoc.exists() && initDoc.data()?.initialized;
+            } catch {
+              // ignore offline error
+            }
+
+            if (localInitialized || cloudInitialized) {
+              // User has intentionally cleared/deleted all messages! Do NOT resurrect initial messages!
+              localStorage.setItem(CHAT_INITIALIZED_KEY, 'true');
+              saveStoredMessagesSilently([]);
+              onMessagesUpdated([]);
+              return;
+            }
+
+            // ONLY on brand-new workspace: seed initial messages once
+            localStorage.setItem(CHAT_INITIALIZED_KEY, 'true');
+            try {
+              await setDoc(doc(db, 'system_settings', 'chat_init'), {
+                initialized: true,
+                initialized_at: serverTimestamp(),
+              });
+            } catch (e) {
+              console.warn('Setting chat_init doc failed:', e);
+            }
+
+            for (const msg of INITIAL_MESSAGES) {
               try {
                 await setDoc(doc(db, 'chat_messages', msg.id), msg);
               } catch (e) {
                 console.warn('Could not seed initial message to Firestore:', e);
               }
             }
-            onMessagesUpdated(toSeed);
+            saveStoredMessagesSilently(INITIAL_MESSAGES);
+            onMessagesUpdated(INITIAL_MESSAGES);
           }
         },
         (error) => {
-          console.warn('Firestore chat listener warning (Security rules or network):', error);
+          console.warn('Firestore chat listener error:', error);
           if (onError) onError(error);
           onMessagesUpdated(getStoredMessages());
         }
@@ -253,7 +284,6 @@ export const subscribeToChatMessages = (onMessagesUpdated, onError) => {
 
 /**
  * Send a new chat message.
- * Updates local cache instantly and persists to Firestore.
  */
 export const sendChatMessage = async ({ messageId, channelId, sender, text, taskAttachment = null }) => {
   if (!text.trim() && !taskAttachment) return null;
@@ -278,7 +308,9 @@ export const sendChatMessage = async ({ messageId, channelId, sender, text, task
     createdAt: new Date().toISOString(),
   };
 
-  // 1. Instantly update local storage & broadcast to other local tabs
+  localStorage.setItem(CHAT_INITIALIZED_KEY, 'true');
+
+  // 1. Immediately store in local storage & broadcast
   const current = getStoredMessages();
   const exists = current.some((m) => m.id === newMessage.id);
   const updated = exists 
@@ -293,8 +325,14 @@ export const sendChatMessage = async ({ messageId, channelId, sender, text, task
         ...newMessage,
         serverCreatedAt: serverTimestamp(),
       });
+      // Mark system settings initialized
+      try {
+        await setDoc(doc(db, 'system_settings', 'chat_init'), { initialized: true });
+      } catch {
+        // ignore
+      }
     } catch (err) {
-      console.error('Failed to save chat message to Cloud Firestore (Check Security Rules):', err);
+      console.error('Failed to save chat message to Cloud Firestore:', err);
       throw err;
     }
   }
@@ -303,13 +341,14 @@ export const sendChatMessage = async ({ messageId, channelId, sender, text, task
 };
 
 /**
- * Delete a chat message by ID (Admin only).
- * Removes from local storage and deletes document in Cloud Firestore.
+ * Delete a specific chat message.
  */
 export const deleteChatMessage = async (messageId) => {
   if (!messageId) return false;
 
-  // 1. Immediately remove from local storage cache & broadcast to local tabs
+  localStorage.setItem(CHAT_INITIALIZED_KEY, 'true');
+
+  // 1. Remove from local storage cache & broadcast
   const current = getStoredMessages();
   const updated = current.filter((m) => m.id !== messageId);
   saveStoredMessages(updated);
@@ -317,9 +356,55 @@ export const deleteChatMessage = async (messageId) => {
   // 2. Delete document in Firestore Cloud Database
   if (isFirebaseConfigured && db) {
     try {
+      // Direct doc deletion by document ID
       await deleteDoc(doc(db, 'chat_messages', messageId));
+
+      // Also scan and delete any document with matching data.id to resolve legacy mismatches
+      try {
+        const snap = await getDocs(collection(db, 'chat_messages'));
+        snap.forEach(async (d) => {
+          if (d.id === messageId || d.data().id === messageId) {
+            await deleteDoc(doc(db, 'chat_messages', d.id));
+          }
+        });
+      } catch {
+        // ignore
+      }
+
+      try {
+        await setDoc(doc(db, 'system_settings', 'chat_init'), { initialized: true });
+      } catch {
+        // ignore
+      }
     } catch (err) {
       console.error('Failed to delete chat message in Cloud Firestore:', err);
+      throw err;
+    }
+  }
+
+  return true;
+};
+
+/**
+ * Clear all chat messages (Admin only).
+ * Permanently wipes chat history and prevents default initial messages from re-seeding.
+ */
+export const clearAllChatMessages = async () => {
+  localStorage.setItem(CHAT_INITIALIZED_KEY, 'true');
+  saveStoredMessages([]);
+
+  if (isFirebaseConfigured && db) {
+    try {
+      await setDoc(doc(db, 'system_settings', 'chat_init'), {
+        initialized: true,
+        cleared_at: serverTimestamp(),
+      });
+
+      const snap = await getDocs(collection(db, 'chat_messages'));
+      const deletions = snap.docs.map((d) => deleteDoc(doc(db, 'chat_messages', d.id)));
+      await Promise.all(deletions);
+    } catch (err) {
+      console.error('Failed to clear all chat messages in Cloud Firestore:', err);
       throw err;
     }
   }

@@ -2090,11 +2090,11 @@ html, body {
   border: none;
   cursor: pointer;
   color: var(--text-muted);
-  opacity: 0.4;
+  opacity: 0.65;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2px;
+  padding: 3px;
   border-radius: 4px;
   transition: all var(--transition-fast);
 }
@@ -2105,8 +2105,18 @@ html, body {
 
 .chat-msg-delete-btn:hover {
   color: #ef4444;
+  background: rgba(239, 68, 68, 0.16);
+  transform: scale(1.2);
+}
+
+.chat-clear-all-banner {
   background: rgba(239, 68, 68, 0.12);
-  transform: scale(1.15);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.25);
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  animation: slideUpChat 160ms ease-out;
 }
 
 .chat-inline-delete-box {

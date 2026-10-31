@@ -19,6 +19,7 @@ import {
   subscribeToChatMessages, 
   sendChatMessage, 
   deleteChatMessage,
+  clearAllChatMessages,
   playChatChime, 
   getDmChannelId,
   getStoredMessages
@@ -35,6 +36,7 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
   const [taskPickerSearch, setTaskPickerSearch] = useState('');
   const [syncWarning, setSyncWarning] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
   const [isSoundMuted, setIsSoundMuted] = useState(() => {
     return localStorage.getItem('jira_chat_sound_muted') === 'true';
   });
@@ -202,10 +204,16 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
     }
   };
 
-  // Check if current logged-in user has admin privileges
-  const canDelete = isAdmin || user?.role === 'admin';
+  // Comprehensive check for admin privileges across multiple role variations
+  const userRole = (user?.role || '').toLowerCase();
+  const isAdminUser = 
+    Boolean(isAdmin) || 
+    Boolean(user?.isAdmin) || 
+    userRole === 'admin' || 
+    userRole === 'administrator' || 
+    user?.username?.toLowerCase() === 'zulfa';
 
-  // Handle message deletion (Admin only)
+  // Handle message deletion
   const handleDeleteMessage = async (msgId) => {
     // Optimistic removal from view
     setMessages((prev) => prev.filter((m) => m.id !== msgId));
@@ -217,6 +225,21 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
       console.error('Failed to delete chat message:', err);
       if (err?.code === 'permission-denied') {
         setSyncWarning('Gagal menghapus di cloud: Izin ditolak oleh Firebase Security Rules.');
+      }
+    }
+  };
+
+  // Handle clearing all chat messages permanently
+  const handleClearAllChat = async () => {
+    setIsClearConfirmOpen(false);
+    setMessages([]);
+
+    try {
+      await clearAllChatMessages();
+    } catch (err) {
+      console.error('Failed to clear chat messages:', err);
+      if (err?.code === 'permission-denied') {
+        setSyncWarning('Gagal mengosongkan chat di cloud: Izin ditolak oleh Firebase Security Rules.');
       }
     }
   };
@@ -313,6 +336,19 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
             </div>
 
             <div className="chat-header-actions">
+              {/* Admin Clear All Messages Button */}
+              {isAdminUser && (
+                <button
+                  type="button"
+                  className="chat-header-btn"
+                  onClick={() => setIsClearConfirmOpen(true)}
+                  title="Bersihkan Semua Pesan (Admin)"
+                  style={{ color: '#ef4444' }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+
               {/* Sound notification toggle */}
               <button
                 type="button"
@@ -344,6 +380,37 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
               </button>
             </div>
           </div>
+
+          {/* Admin Clear All Confirmation Banner */}
+          {!isMinimized && isClearConfirmOpen && (
+            <div className="chat-clear-all-banner">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: '0.78rem', color: '#ef4444' }}>
+                <Trash2 size={14} />
+                <span>Kosongkan Semua Chat?</span>
+              </div>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>
+                Semua chat di semua saluran akan dihapus permanen dari laptop, HP, dan Firestore.
+              </div>
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 4 }}>
+                <button
+                  type="button"
+                  className="chat-delete-cancel-btn"
+                  style={{ padding: '3px 8px', fontSize: '0.72rem' }}
+                  onClick={() => setIsClearConfirmOpen(false)}
+                >
+                  Batal
+                </button>
+                <button
+                  type="button"
+                  className="chat-delete-confirm-btn"
+                  style={{ padding: '3px 10px', fontSize: '0.72rem' }}
+                  onClick={handleClearAllChat}
+                >
+                  Ya, Hapus Semua
+                </button>
+              </div>
+            </div>
+          )}
 
           {!isMinimized && (
             <>
@@ -501,8 +568,8 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
                             <span>{formattedTime}</span>
                             {isMe && <CheckCheck size={13} style={{ color: 'var(--accent-primary)', marginLeft: 3 }} />}
 
-                            {/* Admin Delete Action */}
-                            {canDelete && (
+                            {/* Delete Action (Admin or Message Author) */}
+                            {(isAdminUser || isMe) && (
                               confirmDeleteId === msg.id ? (
                                 <div className="chat-inline-delete-box" onClick={(e) => e.stopPropagation()}>
                                   <span>Hapus?</span>
@@ -531,9 +598,9 @@ export const TeamChat = ({ tasks = [], onOpenTask, user, users = [], isAdmin = f
                                     e.stopPropagation();
                                     setConfirmDeleteId(msg.id);
                                   }}
-                                  title="Hapus pesan (Admin)"
+                                  title={isAdminUser ? "Hapus pesan (Admin)" : "Hapus pesan saya"}
                                 >
-                                  <Trash2 size={11} />
+                                  <Trash2 size={12} />
                                 </button>
                               )
                             )}
