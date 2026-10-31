@@ -13,6 +13,7 @@ import {
   addDoc, 
   setDoc,
   getDocs,
+  getDocsFromServer,
   updateDoc, 
   deleteDoc, 
   onSnapshot, 
@@ -92,10 +93,21 @@ export const checkFirestoreStatus = async () => {
     };
   }
   try {
-    const res = await fetch(
-      `https://firestore.googleapis.com/v1/projects/${firebaseConfig.projectId}/databases/(default)/documents?key=${firebaseConfig.apiKey}`
-    );
-    if (res.status === 404) {
+    // Check actual Firestore server connection
+    await getDocsFromServer(collection(db, 'system_users'));
+    return {
+      status: 'connected',
+      label: 'Firebase Cloud Connected & Synced',
+      details: 'Koneksi ke Cloud Firestore aktif! Data tersinkronisasi real-time di server.',
+      projectId: firebaseConfig.projectId
+    };
+  } catch (error) {
+    const msg = error?.message || '';
+    if (
+      msg.includes('Cloud Firestore API has not been used') ||
+      error?.code === 'failed-precondition' ||
+      msg.includes('disabled')
+    ) {
       return {
         status: 'not_created',
         label: 'Database Belum Dibuat di Firebase Console',
@@ -103,7 +115,7 @@ export const checkFirestoreStatus = async () => {
         projectId: firebaseConfig.projectId
       };
     }
-    if (res.status === 403) {
+    if (error?.code === 'permission-denied') {
       return {
         status: 'permission_denied',
         label: 'Izin Ditolak (Rules Perlu Diupdate)',
@@ -111,25 +123,10 @@ export const checkFirestoreStatus = async () => {
         projectId: firebaseConfig.projectId
       };
     }
-    if (res.ok) {
-      return {
-        status: 'connected',
-        label: 'Firebase Cloud Connected & Synced',
-        details: 'Koneksi ke Cloud Firestore aktif dan data tersinkronisasi real-time.',
-        projectId: firebaseConfig.projectId
-      };
-    }
-    return {
-      status: 'warning',
-      label: `Status HTTP ${res.status}`,
-      details: 'Mengecek respon server Firestore...',
-      projectId: firebaseConfig.projectId
-    };
-  } catch (err) {
     return {
       status: 'offline',
       label: 'Offline / Jaringan Terputus',
-      details: 'Tidak dapat menghubungi server Firebase. Menggunakan penyimpanan lokal.',
+      details: msg || 'Tidak dapat menghubungi server Firebase. Menggunakan penyimpanan lokal.',
       projectId: firebaseConfig.projectId
     };
   }
