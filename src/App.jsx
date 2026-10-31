@@ -9,6 +9,7 @@ import { ConfigModal } from './components/ConfigModal';
 import { LoginScreen } from './components/LoginScreen';
 import { UserManagementModal } from './components/UserManagementModal';
 import { EditProfileModal } from './components/EditProfileModal';
+import { TeamChat } from './components/TeamChat';
 import { Toast } from './components/Toast';
 import { 
   subscribeToTasks, 
@@ -23,7 +24,7 @@ import { isFirebaseConfigured } from './services/firebase';
 import { Zap } from 'lucide-react';
 
 export function App() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, users, loading, isAdmin } = useAuth();
 
   // App Theme: 'light' (default neumorphism) or 'dark'
   const [theme, setTheme] = useState(() => {
@@ -226,6 +227,17 @@ export function App() {
     }
   };
 
+  const handleOpenTaskFromChat = (taskId) => {
+    const found = tasks.find((t) => t.id === taskId);
+    if (found) {
+      setSelectedTask(found);
+      setModalMode('edit');
+      setIsTaskModalOpen(true);
+    } else {
+      addToast('Task tidak ditemukan atau telah dihapus', 'warning');
+    }
+  };
+
   // Loading Screen
   if (loading) {
     return (
@@ -329,6 +341,14 @@ export function App() {
           onClearTasks={handleClearAllTasks}
         />
       )}
+
+      {/* Live Team Chat Messenger (Floating) */}
+      <TeamChat
+        tasks={tasks}
+        onOpenTask={handleOpenTaskFromChat}
+        user={user}
+        users={users}
+      />
 
       {/* Micro-Feedback Toasts */}
       <Toast toasts={toasts} onDismiss={removeToast} />
