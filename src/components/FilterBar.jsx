@@ -1,5 +1,5 @@
 import React, { useRef, useState, useLayoutEffect, useEffect } from 'react';
-import { Users, User, ChevronDown, Check, UserCheck } from 'lucide-react';
+import { Users, User, ChevronDown, Check, UserCheck, ArrowUpDown, ArrowDownWideNarrow, Clock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const FilterBar = ({
@@ -7,18 +7,25 @@ export const FilterBar = ({
   onAssigneeFilterChange,
   priorityFilter,
   onPriorityFilterChange,
+  sortBy = 'default',
+  onSortChange,
   totalTasksCount,
   filteredTasksCount,
 }) => {
   const { user, users } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const sortDropdownRef = useRef(null);
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handleOutsideClick = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setIsDropdownOpen(false);
+      }
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(e.target)) {
+        setIsSortDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
@@ -110,6 +117,53 @@ export const FilterBar = ({
   };
 
   const activeInfo = getActiveFilterInfo();
+
+  const SORT_OPTIONS = [
+    {
+      id: 'default',
+      label: 'Default Order',
+      shortLabel: 'Default',
+      badge: null,
+      description: 'Urutan asli board',
+      icon: <ArrowUpDown size={14} color="var(--text-muted)" />,
+    },
+    {
+      id: 'priority_desc',
+      label: 'Priority: High → Low',
+      shortLabel: 'High First',
+      badge: 'High First',
+      badgeColor: '#ef4444',
+      description: 'Prioritas tertinggi ke terendah',
+      icon: <ArrowDownWideNarrow size={14} color="#ef4444" />,
+    },
+    {
+      id: 'priority_asc',
+      label: 'Priority: Low → High',
+      shortLabel: 'Low First',
+      badge: 'Low First',
+      badgeColor: '#10b981',
+      description: 'Prioritas terendah ke tertinggi',
+      icon: <ArrowDownWideNarrow size={14} style={{ transform: 'rotate(180deg)' }} color="#10b981" />,
+    },
+    {
+      id: 'newest',
+      label: 'Terbaru (Newest)',
+      shortLabel: 'Newest',
+      badge: null,
+      description: 'Dibuat paling baru',
+      icon: <Clock size={14} color="var(--accent-primary)" />,
+    },
+    {
+      id: 'oldest',
+      label: 'Terlama (Oldest)',
+      shortLabel: 'Oldest',
+      badge: null,
+      description: 'Dibuat paling awal',
+      icon: <Clock size={14} color="var(--text-muted)" />,
+    },
+  ];
+
+  const currentSort = SORT_OPTIONS.find((s) => s.id === sortBy) || SORT_OPTIONS[0];
 
   return (
     <div className="board-subbar">
@@ -330,6 +384,109 @@ export const FilterBar = ({
           >
             Low
           </button>
+        </div>
+
+        {/* Sort Filter Dropdown */}
+        <div ref={sortDropdownRef} style={{ position: 'relative' }}>
+          <button
+            type="button"
+            className={`filter-dropdown-trigger ${isSortDropdownOpen || sortBy !== 'default' ? 'active' : ''}`}
+            onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
+            style={{
+              gap: '0.5rem',
+              ...(sortBy !== 'default' ? { color: 'var(--accent-primary)', fontWeight: 700 } : {})
+            }}
+            title="Urutkan kartu berdasarkan prioritas atau waktu"
+          >
+            <span style={{ display: 'flex', alignItems: 'center' }}>
+              {currentSort.icon}
+            </span>
+            <span>Sort: {currentSort.shortLabel}</span>
+            <ChevronDown
+              size={13}
+              color="var(--text-muted)"
+              style={{
+                transform: isSortDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 180ms ease'
+              }}
+            />
+          </button>
+
+          {/* Sort Dropdown Menu */}
+          {isSortDropdownOpen && (
+            <div 
+              className="filter-dropdown-menu" 
+              style={{ width: '250px' }}
+            >
+              <div style={{
+                fontSize: '0.68rem',
+                fontWeight: 700,
+                color: 'var(--text-muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+                padding: '4px 10px 6px'
+              }}>
+                Urutkan Kartu:
+              </div>
+              {SORT_OPTIONS.map((opt) => {
+                const isSelected = sortBy === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    className={`filter-dropdown-item ${isSelected ? 'active' : ''}`}
+                    onClick={() => {
+                      if (onSortChange) onSortChange(opt.id);
+                      setIsSortDropdownOpen(false);
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '7px 10px',
+                      borderRadius: 'var(--radius-sm)',
+                      border: 'none',
+                      background: isSelected ? 'rgba(249, 115, 22, 0.12)' : 'transparent',
+                      color: isSelected ? 'var(--accent-primary)' : 'var(--text-primary)',
+                      fontWeight: isSelected ? 700 : 500,
+                      fontSize: '0.82rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      marginBottom: '2px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ display: 'flex', alignItems: 'center' }}>
+                        {opt.icon}
+                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>{opt.label}</span>
+                          {opt.badge && (
+                            <span style={{
+                              fontSize: '0.62rem',
+                              padding: '1px 5px',
+                              borderRadius: '4px',
+                              background: `${opt.badgeColor}22`,
+                              color: opt.badgeColor,
+                              fontWeight: 700
+                            }}>
+                              {opt.badge}
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--text-muted)' }}>
+                          {opt.description}
+                        </span>
+                      </div>
+                    </div>
+                    {isSelected && <Check size={14} color="var(--accent-primary)" />}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

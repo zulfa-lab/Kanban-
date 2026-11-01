@@ -36,6 +36,14 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [assigneeFilter, setAssigneeFilter] = useState('all'); // 'all' | 'my_tasks' | 'user:username'
   const [priorityFilter, setPriorityFilter] = useState('all'); // 'all' | 'high' | 'medium' | 'low'
+  const [sortBy, setSortBy] = useState(() => {
+    return localStorage.getItem('jira_lite_sort_by') || 'default';
+  });
+
+  // Sync sorting preference to local storage
+  useEffect(() => {
+    localStorage.setItem('jira_lite_sort_by', sortBy);
+  }, [sortBy]);
 
   // Modals state
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -292,13 +300,16 @@ export function App() {
         onAssigneeFilterChange={setAssigneeFilter}
         priorityFilter={priorityFilter}
         onPriorityFilterChange={setPriorityFilter}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
         totalTasksCount={tasks.length}
         filteredTasksCount={filteredTasks.length}
       />
 
       <Board
         tasks={filteredTasks}
-        filterKey={`${assigneeFilter}-${priorityFilter}`}
+        sortBy={sortBy}
+        filterKey={`${assigneeFilter}-${priorityFilter}-${sortBy}`}
         onTaskClick={handleOpenEditModal}
         onAddTask={handleOpenCreateModal}
         onUpdateTaskStatus={handleUpdateTaskStatus}

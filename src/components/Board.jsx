@@ -1,9 +1,39 @@
 import React, { useState } from 'react';
 import { Column } from './Column';
 
+const PRIORITY_WEIGHTS = {
+  high: 3,
+  medium: 2,
+  low: 1,
+};
+
+const sortTasks = (taskList, sortOrder) => {
+  return [...taskList].sort((a, b) => {
+    if (sortOrder === 'priority_desc') {
+      const pDiff = (PRIORITY_WEIGHTS[b.priority] || 0) - (PRIORITY_WEIGHTS[a.priority] || 0);
+      if (pDiff !== 0) return pDiff;
+      return (a.order || 0) - (b.order || 0);
+    }
+    if (sortOrder === 'priority_asc') {
+      const pDiff = (PRIORITY_WEIGHTS[a.priority] || 0) - (PRIORITY_WEIGHTS[b.priority] || 0);
+      if (pDiff !== 0) return pDiff;
+      return (a.order || 0) - (b.order || 0);
+    }
+    if (sortOrder === 'newest') {
+      return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+    }
+    if (sortOrder === 'oldest') {
+      return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+    }
+    // 'default' (manual drag order)
+    return (a.order || 0) - (b.order || 0);
+  });
+};
+
 export const Board = ({
   tasks,
   filterKey,
+  sortBy = 'default',
   onTaskClick,
   onAddTask,
   onUpdateTaskStatus,
@@ -30,17 +60,20 @@ export const Board = ({
   };
 
   // Group and sort tasks by column
-  const todoTasks = tasks
-    .filter((t) => t.status === 'todo')
-    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  const todoTasks = sortTasks(
+    tasks.filter((t) => t.status === 'todo'),
+    sortBy
+  );
 
-  const inProgressTasks = tasks
-    .filter((t) => t.status === 'in_progress')
-    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  const inProgressTasks = sortTasks(
+    tasks.filter((t) => t.status === 'in_progress'),
+    sortBy
+  );
 
-  const doneTasks = tasks
-    .filter((t) => t.status === 'done')
-    .sort((a, b) => (a.order || 0) - (b.order || 0));
+  const doneTasks = sortTasks(
+    tasks.filter((t) => t.status === 'done'),
+    sortBy
+  );
 
   return (
     <main className="board-container">
