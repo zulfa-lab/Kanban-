@@ -24,14 +24,14 @@ export const INITIAL_SYSTEM_USERS = [
     created_at: new Date('2026-01-01').toISOString(),
   },
   {
-    id: 'user-alex',
-    username: 'alex',
-    password: 'alex123',
-    name: 'Alex Rivera',
+    id: 'user-mvxipr9r-982',
+    username: 'navista',
+    password: 'navista123',
+    name: 'navista andara',
     role: 'user',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=faces',
+    avatar: null,
     color: '#06b6d4',
-    created_at: new Date('2026-01-02').toISOString(),
+    created_at: '2026-11-01T07:38:01.167Z',
   }
 ];
 
